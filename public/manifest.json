@@ -1,0 +1,50 @@
+{
+  "manifest_version": 3,
+  "name": "OneNote Draft Bridge",
+  "description": "Genera drafts HTML desde documentación OneNote abierta en el navegador.",
+  "version": "0.1.0",
+  "action": {
+    "default_title": "OneNote Draft Bridge",
+    "default_popup": "popup.html"
+  },
+  "options_page": "options.html",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://*.onenote.com/*",
+    "https://*.office.com/*",
+    "https://*.officeapps.live.com/*",
+    "https://*.sharepoint.com/*",
+    "https://onedrive.live.com/*",
+    "https://outlook.office.com/*",
+    "https://outlook.office365.com/*"
+  ],
+  "background": {
+    "service_worker": "background/index.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.onenote.com/*",
+        "https://*.office.com/*",
+        "https://*.officeapps.live.com/*",
+        "https://*.sharepoint.com/*",
+        "https://onedrive.live.com/*"
+      ],
+      "js": ["content/onenote.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://outlook.office.com/*",
+        "https://outlook.office365.com/*"
+      ],
+      "js": ["content/outlook.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
