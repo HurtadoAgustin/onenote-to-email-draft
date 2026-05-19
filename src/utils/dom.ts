@@ -1,4 +1,4 @@
-export const delay = async (ms: number): Promise<void> =>
+export const delay = (ms: number): Promise<void> =>
   new Promise(resolve => window.setTimeout(resolve, ms));
 
 export const waitForElement = async <T extends Element>(
@@ -22,7 +22,7 @@ export const waitForElement = async <T extends Element>(
       resolve(element);
     });
 
-    observer.observe(document.documentElement, {
+    observer.observe(document.body, {
       childList: true,
       subtree: true
     });
@@ -33,21 +33,36 @@ export const waitForElement = async <T extends Element>(
     }, timeoutMs);
   });
 
-export const dispatchEditorEvents = (element: Element): void => {
-  element.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: "insertText" }));
+export const setNativeInputValue = (element: HTMLInputElement, value: string) => {
+  const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+    window.HTMLInputElement.prototype,
+    "value"
+  )?.set;
+
+  nativeInputValueSetter?.call(element, value);
+
+  element.dispatchEvent(new Event("input", { bubbles: true }));
   element.dispatchEvent(new Event("change", { bubbles: true }));
-  element.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true }));
 };
 
-export const setNativeInputValue = (element: HTMLInputElement, value: string): void => {
-  const prototype = Object.getPrototypeOf(element);
-  const descriptor = Object.getOwnPropertyDescriptor(prototype, "value");
+export const insertHtmlIntoContentEditable = (
+  element: HTMLElement,
+  html: string
+) => {
+  element.focus();
 
-  if (descriptor?.set) {
-    descriptor.set.call(element, value);
-  } else {
-    element.value = value;
+  const selection = window.getSelection();
+  const range = document.createRange();
+
+  range.selectNodeContents(element);
+  range.collapse(false);
+  selection?.removeAllRanges();
+  selection?.addRange(range);
+
+  const inserted = document.execCommand("insertHTML", false, html);
+
+  if (!inserted) {
+    element.innerHTML = html;
+    element.dispatchEvent(new InputEvent("input", { bubbles: true }));
   }
-
-  dispatchEditorEvents(element);
 };

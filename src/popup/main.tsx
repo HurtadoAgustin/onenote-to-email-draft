@@ -1,51 +1,55 @@
 import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
-import type { GenerateMailResponse } from "../utils/types";
+import type { GenerateDraftResponse } from "../utils/types";
 import "./styles.css";
 
-const sendGenerateMessage = async (): Promise<GenerateMailResponse> =>
-  chrome.runtime.sendMessage({ type: "GENERATE_MAIL_FROM_CURRENT_TAB" });
-
 const App = () => {
-  const [logs, setLogs] = useState<string[]>(["Listo para generar mail desde OneNote."]);
+  const [logs, setLogs] = useState<string[]>([
+    "Abrí una página de OneNote Web y presioná Generar mail."
+  ]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleGenerate = async () => {
+  const generateMail = async () => {
     setIsLoading(true);
-    setLogs(["⏳ Leyendo OneNote y preparando draft..."]);
+    setLogs(["Generando draft..."]);
 
     try {
-      const response = await sendGenerateMessage();
-      setLogs(response.logs);
+      const response = (await chrome.runtime.sendMessage({
+        type: "GENERATE_GMAIL_DRAFT"
+      })) as GenerateDraftResponse;
+
+      setLogs(response?.logs?.length ? response.logs : ["❌ No hubo respuesta de la extensión"]);
     } catch (error) {
-      setLogs([`❌ Error: ${error instanceof Error ? error.message : String(error)}`]);
+      setLogs([
+        "❌ Error al comunicarse con la extensión",
+        error instanceof Error ? error.message : String(error)
+      ]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleOpenOptions = () => {
+  const openOptions = () => {
     chrome.runtime.openOptionsPage();
   };
 
   return (
-    <main className="popup">
+    <main className="container">
       <header className="header">
-        <h1>OneNote Draft Bridge</h1>
-        <p>Generá un draft desde la página actual.</p>
+        <h1>OneNote to Mail Draft</h1>
+        <p>Genera un draft de Gmail desde OneNote.</p>
       </header>
 
       <section className="actions">
-        <button className="primaryButton" disabled={isLoading} onClick={handleGenerate}>
+        <button className="primaryButton" disabled={isLoading} onClick={generateMail}>
           {isLoading ? "Generando..." : "Generar mail"}
         </button>
-
-        <button className="secondaryButton" disabled={isLoading} onClick={handleOpenOptions}>
+        <button className="secondaryButton" disabled={isLoading} onClick={openOptions}>
           Settings
         </button>
       </section>
 
-      <section className="logs" aria-label="Logs">
+      <section className="logs">
         {logs.map((log, index) => (
           <div className="logItem" key={`${log}-${index}`}>
             {log}
@@ -56,8 +60,4 @@ const App = () => {
   );
 };
 
-createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+createRoot(document.getElementById("root")!).render(<App />);

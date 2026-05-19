@@ -1,46 +1,37 @@
-import type { ExtensionConfig, OneNoteExtractResponse } from "../utils/types";
+import type { ExtractOneNotePayload, ExtractOneNoteResponse, RuntimeMessage } from "../utils/types";
 
-declare global {
-  interface Window {
-    __onenoteDraftBridgeOneNoteLoaded?: boolean;
+const extractTextFromOneNote = (
+  message: ExtractOneNotePayload
+): ExtractOneNoteResponse => {
+  const selector = message.config.selectors.oneNoteRoot?.trim();
+  const root = selector ? document.querySelector<HTMLElement>(selector) : document.body;
+
+  if (!root) {
+    return {
+      ok: false,
+      logs: ["❌ No se encontró el contenedor de OneNote"]
+    };
   }
-}
 
-const getReadableText = (config: ExtensionConfig): string => {
-  const selector = config.selectors.oneNoteRoot || "body";
-  const root = document.querySelector<HTMLElement>(selector) ?? document.body;
-  return root?.innerText?.trim() ?? "";
-};
-
-const extractOneNoteData = (config: ExtensionConfig): OneNoteExtractResponse => {
-  const text = getReadableText(config);
+  const text = root.innerText?.trim() ?? "";
 
   if (!text) {
     return {
       ok: false,
-      logs: ["❌ No se pudo leer texto desde la página actual"]
+      logs: ["❌ OneNote no devolvió texto visible"]
     };
   }
 
   return {
     ok: true,
     text,
-    logs: ["✅ Página leída correctamente"]
+    logs: ["✅ Página OneNote leída"]
   };
 };
 
-if (!window.__onenoteDraftBridgeOneNoteLoaded) {
-  window.__onenoteDraftBridgeOneNoteLoaded = true;
+chrome.runtime.onMessage.addListener((message: RuntimeMessage, _sender, sendResponse) => {
+  if (message.type !== "EXTRACT_ONENOTE_TEXT") return false;
 
-  chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-    if (message.type === "PING_ONENOTE_CONTENT") {
-      sendResponse({ ok: true });
-      return;
-    }
-
-    if (message.type !== "EXTRACT_ONENOTE_DATA") return;
-
-    const response = extractOneNoteData(message.config);
-    sendResponse(response);
-  });
-}
+  sendResponse(extractTextFromOneNote(message));
+  return true;
+});

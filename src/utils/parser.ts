@@ -1,50 +1,43 @@
-import type { ExtensionConfig, ParsedDataResult } from "./types";
+import type { FieldMapping } from "./types";
 
-const escapeRegExp = (value: string): string =>
-  value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
-const normalizeLogName = (key: string): string =>
-  key.charAt(0).toUpperCase() + key.slice(1);
+const normalize = (value: string): string =>
+  value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
 
 export const parseStructuredText = (
   text: string,
-  config: ExtensionConfig
-): ParsedDataResult => {
+  mappings: FieldMapping[]
+): Record<string, string> => {
   const lines = text
     .split("\n")
     .map(line => line.trim())
     .filter(Boolean);
 
-  const data: Record<string, string> = {};
-  const logs: string[] = [];
-  const missingRequiredFields: string[] = [];
+  return mappings.reduce<Record<string, string>>((acc, mapping) => {
+    const matchingLine = lines.find(line =>
+      mapping.labels.some(label =>
+        normalize(line).startsWith(`${normalize(label)}:`)
+      )
+    );
 
-  config.fieldMappings.forEach(mapping => {
-    const labelPattern = mapping.labels.map(escapeRegExp).join("|");
-    const regex = new RegExp(`^(${labelPattern})\\s*:\\s*(.*)$`, "i");
-    const foundLine = lines.find(line => regex.test(line));
+    if (!matchingLine) return acc;
 
-    if (!foundLine) {
-      const logPrefix = mapping.required ? "❌" : "⚠️";
-      logs.push(`${logPrefix} ${normalizeLogName(mapping.key)} faltante`);
+    const [, ...valueParts] = matchingLine.split(":");
+    const value = valueParts.join(":").trim();
 
-      if (mapping.required) missingRequiredFields.push(mapping.key);
-      return;
-    }
+    if (value) acc[mapping.key] = value;
 
-    const value = foundLine.replace(regex, "$2").trim();
-
-    if (!value) {
-      const logPrefix = mapping.required ? "❌" : "⚠️";
-      logs.push(`${logPrefix} ${normalizeLogName(mapping.key)} vacío`);
-
-      if (mapping.required) missingRequiredFields.push(mapping.key);
-      return;
-    }
-
-    data[mapping.key] = value;
-    logs.push(`✅ ${normalizeLogName(mapping.key)} encontrado`);
-  });
-
-  return { data, logs, missingRequiredFields };
+    return acc;
+  }, {});
 };
+
+export const getMissingRequiredFields = (
+  data: Record<string, string>,
+  mappings: FieldMapping[]
+): string[] =>
+  mappings
+    .filter(mapping => mapping.required && !data[mapping.key])
+    .map(mapping => mapping.key);

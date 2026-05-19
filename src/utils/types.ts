@@ -4,44 +4,61 @@ export type FieldMapping = {
   required?: boolean;
 };
 
+export type ExtensionSelectors = {
+  oneNoteRoot?: string;
+  gmailComposeDialog?: string;
+  gmailSubject?: string;
+  gmailBody?: string;
+};
+
+export type ExtensionFlags = {
+  insertSignature: boolean;
+  allowIncompleteFields: boolean;
+};
+
 export type ExtensionConfig = {
   mailUrl: string;
   subjectTemplate: string;
   bodyTemplate: string;
   signatureHtml: string;
   fieldMappings: FieldMapping[];
-  selectors: {
-    oneNoteRoot?: string;
-    outlookNewMailButton?: string;
-    outlookSubject?: string;
-    outlookBody?: string;
-    outlookTo?: string;
-  };
-  flags: {
-    autoOpenCompose: boolean;
-    insertSignature: boolean;
-    allowIncompleteFields: boolean;
-  };
+  selectors: ExtensionSelectors;
+  flags: ExtensionFlags;
 };
 
-export type OneNoteExtractResponse = {
+export type GenerateDraftResponse = {
+  ok: boolean;
+  logs: string[];
+};
+
+export type ExtractOneNoteResponse = {
   ok: boolean;
   text?: string;
   logs: string[];
 };
 
-export type OutlookInsertResponse = {
+export type InsertGmailDraftResponse = {
   ok: boolean;
   logs: string[];
 };
 
-export type GenerateMailResponse = {
-  ok: boolean;
-  logs: string[];
+export type GenerateDraftPayload = {
+  type: "GENERATE_GMAIL_DRAFT";
 };
 
-export type ParsedDataResult = {
-  data: Record<string, string>;
-  logs: string[];
-  missingRequiredFields: string[];
+export type ExtractOneNotePayload = {
+  type: "EXTRACT_ONENOTE_TEXT";
+  config: ExtensionConfig;
 };
+
+export type InsertGmailDraftPayload = {
+  type: "INSERT_GMAIL_DRAFT";
+  subject: string;
+  html: string;
+  config: ExtensionConfig;
+};
+
+export type RuntimeMessage =
+  | GenerateDraftPayload
+  | ExtractOneNotePayload
+  | InsertGmailDraftPayload;

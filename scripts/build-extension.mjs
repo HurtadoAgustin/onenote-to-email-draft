@@ -1,31 +1,29 @@
 import { build } from "esbuild";
 
-const commonOptions = {
+const sharedConfig = {
   bundle: true,
-  platform: "browser",
-  target: ["chrome114", "edge114"],
-  sourcemap: true,
   minify: false,
-  logLevel: "info"
+  sourcemap: true,
+  target: "chrome114",
+  format: "iife",
+  platform: "browser"
 };
 
 await Promise.all([
   build({
-    ...commonOptions,
+    ...sharedConfig,
     entryPoints: ["src/background/index.ts"],
     outfile: "dist/background/index.js",
-    format: "iife"
+    format: "esm"
   }),
   build({
-    ...commonOptions,
+    ...sharedConfig,
     entryPoints: ["src/content/onenote.ts"],
-    outfile: "dist/content/onenote.js",
-    format: "iife"
+    outfile: "dist/content/onenote.js"
   }),
   build({
-    ...commonOptions,
-    entryPoints: ["src/content/outlook.ts"],
-    outfile: "dist/content/outlook.js",
-    format: "iife"
+    ...sharedConfig,
+    entryPoints: ["src/content/gmail.ts"],
+    outfile: "dist/content/gmail.js"
   })
 ]);

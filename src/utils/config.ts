@@ -1,11 +1,12 @@
 import type { ExtensionConfig } from "./types";
 
-export const CONFIG_STORAGE_KEY = "onenoteDraftBridge.config";
+const CONFIG_STORAGE_KEY = "onenoteToMailDraftConfig";
 
 export const defaultConfig: ExtensionConfig = {
-  mailUrl: "https://outlook.office.com/mail/deeplink/compose",
+  mailUrl: "https://mail.google.com/mail/u/0/#inbox?compose=new",
   subjectTemplate: "Ticket {{ticket}} - {{cliente}}",
-  bodyTemplate: `<p>Hola,</p>
+  bodyTemplate: `
+<p>Hola,</p>
 <p>Compartimos el resumen del caso:</p>
 <ul>
   <li><strong>Cliente:</strong> {{cliente}}</li>
@@ -13,7 +14,8 @@ export const defaultConfig: ExtensionConfig = {
   <li><strong>Problema:</strong> {{problema}}</li>
   <li><strong>Resolución:</strong> {{resolucion}}</li>
 </ul>
-{{firma}}`,
+{{firma}}
+`,
   signatureHtml: "<p>Saludos,</p>",
   fieldMappings: [
     { key: "cliente", labels: ["Cliente"], required: true },
@@ -22,41 +24,36 @@ export const defaultConfig: ExtensionConfig = {
     { key: "resolucion", labels: ["Resolución", "Resolucion"], required: false }
   ],
   selectors: {
-    oneNoteRoot: "body",
-    outlookNewMailButton: 'button[aria-label="New mail"], button[aria-label="Nuevo correo"], button[aria-label="Nuevo mensaje"]',
-    outlookSubject: 'input[aria-label="Add a subject"], input[aria-label="Agregar un asunto"], input[aria-label="Asunto"], [aria-label="Add a subject"], [aria-label="Agregar un asunto"]',
-    outlookBody: 'div[aria-label="Message body"], div[aria-label="Cuerpo del mensaje"], [role="textbox"][aria-label*="Message"], [role="textbox"][aria-label*="mensaje"]',
-    outlookTo: 'div[aria-label="To"], div[aria-label="Para"], [aria-label="To"], [aria-label="Para"]'
+    oneNoteRoot: "",
+    gmailComposeDialog: "div[role='dialog']",
+    gmailSubject: "input[name='subjectbox']",
+    gmailBody: "div[aria-label='Message Body'][contenteditable='true'], div[role='textbox'][contenteditable='true']"
   },
   flags: {
-    autoOpenCompose: true,
     insertSignature: true,
     allowIncompleteFields: true
   }
 };
 
-const isObject = (value: unknown): value is Record<string, unknown> =>
-  typeof value === "object" && value !== null && !Array.isArray(value);
-
-const mergeConfig = (saved?: Partial<ExtensionConfig>): ExtensionConfig => ({
+const mergeConfig = (storedConfig?: Partial<ExtensionConfig>): ExtensionConfig => ({
   ...defaultConfig,
-  ...(saved ?? {}),
+  ...storedConfig,
   selectors: {
     ...defaultConfig.selectors,
-    ...(isObject(saved?.selectors) ? saved.selectors : {})
+    ...storedConfig?.selectors
   },
   flags: {
     ...defaultConfig.flags,
-    ...(isObject(saved?.flags) ? saved.flags : {})
+    ...storedConfig?.flags
   },
-  fieldMappings: Array.isArray(saved?.fieldMappings)
-    ? saved.fieldMappings
+  fieldMappings: storedConfig?.fieldMappings?.length
+    ? storedConfig.fieldMappings
     : defaultConfig.fieldMappings
 });
 
 export const getConfig = async (): Promise<ExtensionConfig> => {
   const result = await chrome.storage.local.get(CONFIG_STORAGE_KEY);
-  return mergeConfig(result[CONFIG_STORAGE_KEY]);
+  return mergeConfig(result[CONFIG_STORAGE_KEY] as Partial<ExtensionConfig> | undefined);
 };
 
 export const saveConfig = async (config: ExtensionConfig): Promise<void> => {

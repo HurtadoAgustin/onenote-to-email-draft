@@ -1,135 +1,145 @@
 import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { defaultConfig, getConfig, resetConfig, saveConfig } from "../utils/config";
-import type { ExtensionConfig, FieldMapping } from "../utils/types";
+import type { ExtensionConfig, ExtensionFlags, ExtensionSelectors, FieldMapping } from "../utils/types";
 import "./styles.css";
 
-type JsonField = "fieldMappings" | "selectors" | "flags";
-
-const prettyJson = (value: unknown): string => JSON.stringify(value, null, 2);
-
-const parseJsonField = <T,>(value: string, fieldName: string): T => {
+const parseJsonField = <T,>(value: string, fallback: T): T => {
   try {
     return JSON.parse(value) as T;
   } catch {
-    throw new Error(`El campo ${fieldName} no tiene JSON válido.`);
+    return fallback;
   }
 };
 
 const App = () => {
   const [config, setConfig] = useState<ExtensionConfig>(defaultConfig);
-  const [fieldMappingsJson, setFieldMappingsJson] = useState(prettyJson(defaultConfig.fieldMappings));
-  const [selectorsJson, setSelectorsJson] = useState(prettyJson(defaultConfig.selectors));
-  const [flagsJson, setFlagsJson] = useState(prettyJson(defaultConfig.flags));
+  const [fieldMappingsJson, setFieldMappingsJson] = useState("");
+  const [selectorsJson, setSelectorsJson] = useState("");
+  const [flagsJson, setFlagsJson] = useState("");
   const [status, setStatus] = useState("Cargando configuración...");
 
   useEffect(() => {
-    void getConfig().then(savedConfig => {
-      setConfig(savedConfig);
-      setFieldMappingsJson(prettyJson(savedConfig.fieldMappings));
-      setSelectorsJson(prettyJson(savedConfig.selectors));
-      setFlagsJson(prettyJson(savedConfig.flags));
-      setStatus("Configuración cargada.");
+    void getConfig().then(loadedConfig => {
+      setConfig(loadedConfig);
+      setFieldMappingsJson(JSON.stringify(loadedConfig.fieldMappings, null, 2));
+      setSelectorsJson(JSON.stringify(loadedConfig.selectors, null, 2));
+      setFlagsJson(JSON.stringify(loadedConfig.flags, null, 2));
+      setStatus("Configuración cargada");
     });
   }, []);
 
-  const updateTextValue = (field: keyof Pick<ExtensionConfig, "mailUrl" | "subjectTemplate" | "bodyTemplate" | "signatureHtml">) => (
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  const updateConfigField = <TKey extends keyof ExtensionConfig>(
+    key: TKey,
+    value: ExtensionConfig[TKey]
   ) => {
-    setConfig(current => ({ ...current, [field]: event.target.value }));
+    setConfig(currentConfig => ({
+      ...currentConfig,
+      [key]: value
+    }));
   };
 
-  const validateAndBuildConfig = (): ExtensionConfig => ({
-    ...config,
-    fieldMappings: parseJsonField<FieldMapping[]>(fieldMappingsJson, "fieldMappings"),
-    selectors: parseJsonField<ExtensionConfig["selectors"]>(selectorsJson, "selectors"),
-    flags: parseJsonField<ExtensionConfig["flags"]>(flagsJson, "flags")
-  });
+  const save = async () => {
+    const updatedConfig: ExtensionConfig = {
+      ...config,
+      fieldMappings: parseJsonField<FieldMapping[]>(fieldMappingsJson, config.fieldMappings),
+      selectors: parseJsonField<ExtensionSelectors>(selectorsJson, config.selectors),
+      flags: parseJsonField<ExtensionFlags>(flagsJson, config.flags)
+    };
 
-  const handleSave = async () => {
-    try {
-      const nextConfig = validateAndBuildConfig();
-      await saveConfig(nextConfig);
-      setConfig(nextConfig);
-      setStatus("✅ Configuración guardada.");
-    } catch (error) {
-      setStatus(`❌ ${error instanceof Error ? error.message : String(error)}`);
-    }
+    await saveConfig(updatedConfig);
+    setConfig(updatedConfig);
+    setStatus("✅ Configuración guardada");
   };
 
-  const handleReset = async () => {
-    const nextConfig = await resetConfig();
-    setConfig(nextConfig);
-    setFieldMappingsJson(prettyJson(nextConfig.fieldMappings));
-    setSelectorsJson(prettyJson(nextConfig.selectors));
-    setFlagsJson(prettyJson(nextConfig.flags));
-    setStatus("✅ Configuración restaurada a defaults.");
+  const reset = async () => {
+    const restoredConfig = await resetConfig();
+    setConfig(restoredConfig);
+    setFieldMappingsJson(JSON.stringify(restoredConfig.fieldMappings, null, 2));
+    setSelectorsJson(JSON.stringify(restoredConfig.selectors, null, 2));
+    setFlagsJson(JSON.stringify(restoredConfig.flags, null, 2));
+    setStatus("✅ Configuración restaurada");
   };
-
-  const renderJsonField = (
-    label: string,
-    value: string,
-    setter: React.Dispatch<React.SetStateAction<string>>,
-    field: JsonField
-  ) => (
-    <label className="field">
-      <span>{label}</span>
-      <textarea
-        className="codeArea"
-        spellCheck={false}
-        value={value}
-        onChange={event => setter(event.target.value)}
-        data-field={field}
-      />
-    </label>
-  );
 
   return (
-    <main className="page">
+    <main className="container">
       <header className="header">
-        <h1>OneNote Draft Bridge - Settings</h1>
-        <p>Configuración local guardada en chrome.storage.local.</p>
+        <h1>Settings</h1>
+        <p>Configuración local de OneNote to Mail Draft.</p>
       </header>
 
       <section className="card">
-        <label className="field">
-          <span>URL Mail2/Outlook</span>
-          <input value={config.mailUrl} onChange={updateTextValue("mailUrl")} />
+        <label>
+          URL Gmail
+          <input
+            value={config.mailUrl}
+            onChange={event => updateConfigField("mailUrl", event.target.value)}
+          />
         </label>
 
-        <label className="field">
-          <span>Subject template</span>
-          <input value={config.subjectTemplate} onChange={updateTextValue("subjectTemplate")} />
+        <label>
+          Subject template
+          <input
+            value={config.subjectTemplate}
+            onChange={event => updateConfigField("subjectTemplate", event.target.value)}
+          />
         </label>
 
-        <label className="field">
-          <span>Body HTML template</span>
-          <textarea value={config.bodyTemplate} onChange={updateTextValue("bodyTemplate")} />
+        <label>
+          Body HTML template
+          <textarea
+            rows={10}
+            value={config.bodyTemplate}
+            onChange={event => updateConfigField("bodyTemplate", event.target.value)}
+          />
         </label>
 
-        <label className="field">
-          <span>Firma HTML</span>
-          <textarea value={config.signatureHtml} onChange={updateTextValue("signatureHtml")} />
+        <label>
+          Firma HTML
+          <textarea
+            rows={4}
+            value={config.signatureHtml}
+            onChange={event => updateConfigField("signatureHtml", event.target.value)}
+          />
         </label>
       </section>
 
       <section className="card">
-        {renderJsonField("Field mappings JSON", fieldMappingsJson, setFieldMappingsJson, "fieldMappings")}
-        {renderJsonField("Selectors JSON", selectorsJson, setSelectorsJson, "selectors")}
-        {renderJsonField("Flags JSON", flagsJson, setFlagsJson, "flags")}
+        <label>
+          Field mappings JSON
+          <textarea
+            rows={10}
+            value={fieldMappingsJson}
+            onChange={event => setFieldMappingsJson(event.target.value)}
+          />
+        </label>
+
+        <label>
+          Selectors JSON
+          <textarea
+            rows={7}
+            value={selectorsJson}
+            onChange={event => setSelectorsJson(event.target.value)}
+          />
+        </label>
+
+        <label>
+          Flags JSON
+          <textarea
+            rows={5}
+            value={flagsJson}
+            onChange={event => setFlagsJson(event.target.value)}
+          />
+        </label>
       </section>
 
       <footer className="footer">
-        <button className="primaryButton" onClick={handleSave}>Guardar</button>
-        <button className="secondaryButton" onClick={handleReset}>Restaurar defaults</button>
-        <span className="status">{status}</span>
+        <button className="primaryButton" onClick={save}>Guardar</button>
+        <button className="secondaryButton" onClick={reset}>Restaurar defaults</button>
+        <span>{status}</span>
       </footer>
     </main>
   );
 };
 
-createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+createRoot(document.getElementById("root")!).render(<App />);

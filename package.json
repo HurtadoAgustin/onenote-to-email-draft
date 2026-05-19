@@ -1,26 +1,26 @@
 {
-  "name": "onenote-draft-bridge",
+  "name": "onenote-to-mail-draft",
   "version": "0.1.0",
   "private": true,
+  "description": "Chrome/Edge extension to extract structured data from OneNote Web and generate a reviewable Gmail draft, fully client-side and without backend or AI.",
   "type": "module",
   "scripts": {
-    "dev": "vite --host 127.0.0.1",
-    "build": "rimraf dist && vite build && node scripts/build-extension.mjs",
-    "preview": "vite preview",
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build && node scripts/build-extension.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",
-    "vite": "latest",
-    "typescript": "latest",
     "react": "latest",
     "react-dom": "latest",
-    "esbuild": "latest",
-    "rimraf": "latest"
+    "typescript": "latest",
+    "vite": "latest"
   },
   "devDependencies": {
     "@types/chrome": "latest",
+    "@types/node": "^25.9.1",
     "@types/react": "latest",
-    "@types/react-dom": "latest"
+    "@types/react-dom": "latest",
+    "esbuild": "latest"
   }
 }

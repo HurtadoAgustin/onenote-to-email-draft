@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "OneNote to Mail Draft",
   "version": "0.1.0",
-  "description": "Chrome/Edge extension to extract structured data from OneNote Web and generate a reviewable Gmail draft, fully client-side and without backend or AI.",
+  "description": "Extract structured data from OneNote Web and generate a reviewable Gmail draft, fully client-side and without backend or AI.",
   "permissions": ["storage", "tabs"],
   "host_permissions": [
     "https://*.onenote.com/*",
@@ -13,7 +13,8 @@
     "https://mail.google.com/*"
   ],
   "background": {
-    "service_worker": "background/index.js"
+    "service_worker": "background/index.js",
+    "type": "module"
   },
   "action": {
     "default_popup": "popup.html"
