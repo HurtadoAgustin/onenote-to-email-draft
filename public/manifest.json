@@ -1,31 +1,24 @@
 {
   "manifest_version": 3,
-  "name": "OneNote Draft Bridge",
-  "description": "Genera drafts HTML desde documentación OneNote abierta en el navegador.",
+  "name": "OneNote to Mail Draft",
   "version": "0.1.0",
-  "action": {
-    "default_title": "OneNote Draft Bridge",
-    "default_popup": "popup.html"
-  },
-  "options_page": "options.html",
-  "permissions": [
-    "activeTab",
-    "scripting",
-    "storage",
-    "tabs"
-  ],
+  "description": "Chrome/Edge extension to extract structured data from OneNote Web and generate a reviewable Gmail draft, fully client-side and without backend or AI.",
+  "permissions": ["storage", "tabs"],
   "host_permissions": [
     "https://*.onenote.com/*",
     "https://*.office.com/*",
     "https://*.officeapps.live.com/*",
     "https://*.sharepoint.com/*",
     "https://onedrive.live.com/*",
-    "https://outlook.office.com/*",
-    "https://outlook.office365.com/*"
+    "https://mail.google.com/*"
   ],
   "background": {
     "service_worker": "background/index.js"
   },
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "options_page": "options.html",
   "content_scripts": [
     {
       "matches": [
@@ -39,11 +32,8 @@
       "run_at": "document_idle"
     },
     {
-      "matches": [
-        "https://outlook.office.com/*",
-        "https://outlook.office365.com/*"
-      ],
-      "js": ["content/outlook.js"],
+      "matches": ["https://mail.google.com/*"],
+      "js": ["content/gmail.js"],
       "run_at": "document_idle"
     }
   ]
