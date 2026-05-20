@@ -3,7 +3,7 @@
   "name": "OneNote to Mail Draft",
   "version": "0.1.0",
   "description": "Extract structured data from OneNote Web and generate a reviewable Gmail draft, fully client-side and without backend or AI.",
-  "permissions": ["storage", "tabs"],
+  "permissions": ["storage", "tabs", "scripting"],
   "host_permissions": [
     "https://*.onenote.com/*",
     "https://*.office.com/*",
@@ -30,7 +30,8 @@
         "https://onedrive.live.com/*"
       ],
       "js": ["content/onenote.js"],
-      "run_at": "document_idle"
+      "run_at": "document_idle",
+      "all_frames": true
     },
     {
       "matches": ["https://mail.google.com/*"],

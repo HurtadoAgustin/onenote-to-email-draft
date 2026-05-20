@@ -8,6 +8,13 @@ import type {
   RuntimeMessage
 } from "../utils/types";
 
+type ExtractedFrameText = {
+  url: string;
+  title: string;
+  text: string;
+  textLength: number;
+};
+
 const sendMessageToTab = async <TResponse>(
   tabId: number,
   message: RuntimeMessage,
@@ -41,6 +48,120 @@ const buildFoundFieldLogs = (
     data[key] ? `✅ ${key} encontrado` : `⚠️ ${key} faltante`
   );
 
+const extractOneNoteTextFromTab = async (
+  tabId: number,
+  rootSelector?: string
+): Promise<ExtractOneNoteResponse> => {
+  try {
+    const results = await chrome.scripting.executeScript({
+      target: {
+        tabId,
+        allFrames: true
+      },
+      args: [rootSelector ?? ""],
+      func: (selector: string): ExtractedFrameText => {
+        const normalizeText = (value: string): string =>
+          value
+            .replace(/\u00a0/g, " ")
+            .replace(/[ \t]+/g, " ")
+            .replace(/\n{3,}/g, "\n\n")
+            .trim();
+
+        const safeQuerySelector = (value: string): Element | null => {
+          try {
+            return value ? document.querySelector(value) : null;
+          } catch {
+            return null;
+          }
+        };
+
+        const getElementText = (element: Element | null): string => {
+          if (!element) return "";
+          const htmlElement = element as HTMLElement;
+          return htmlElement.innerText || htmlElement.textContent || "";
+        };
+
+        const selectedRoot = safeQuerySelector(selector);
+        const rootText = getElementText(selectedRoot ?? document.body);
+
+        const contentEditableText = Array.from(
+          document.querySelectorAll<HTMLElement>("[contenteditable='true']")
+        )
+          .map(element => element.innerText || element.textContent || "")
+          .filter(Boolean)
+          .join("\n");
+
+        const roleTextboxText = Array.from(
+          document.querySelectorAll<HTMLElement>("[role='textbox']")
+        )
+          .map(element => element.innerText || element.textContent || "")
+          .filter(Boolean)
+          .join("\n");
+
+        const selectionText = window.getSelection()?.toString() ?? "";
+
+        const text = normalizeText(
+          [rootText, contentEditableText, roleTextboxText, selectionText]
+            .filter(Boolean)
+            .join("\n")
+        );
+
+        return {
+          url: window.location.href,
+          title: document.title,
+          text,
+          textLength: text.length
+        };
+      }
+    });
+
+    const frameResults = results
+      .map(result => result.result)
+      .filter((result): result is ExtractedFrameText => Boolean(result?.text));
+
+    const uniqueTexts = Array.from(
+      new Set(
+        frameResults
+          .map(result => result.text.trim())
+          .filter(Boolean)
+      )
+    );
+
+    const combinedText = uniqueTexts.join("\n\n").trim();
+
+    console.log("OneNote extraction frames:", frameResults);
+    console.log("OneNote extracted text length:", combinedText.length);
+    console.log("OneNote extracted text preview:", combinedText.slice(0, 2000));
+
+    if (!combinedText) {
+      return {
+        ok: false,
+        logs: [
+          "❌ No se pudo extraer texto desde OneNote",
+          "⚠️ La página puede no estar cargada o el contenido puede estar dentro de un frame no accesible"
+        ]
+      };
+    }
+
+    return {
+      ok: true,
+      text: combinedText,
+      logs: [
+        `✅ Texto extraído de OneNote (${combinedText.length} caracteres)`,
+        `ℹ️ Frames analizados: ${results.length}`
+      ]
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      logs: [
+        "❌ Error al extraer texto desde OneNote",
+        error instanceof Error ? error.message : String(error)
+      ]
+    };
+  }
+};
+
 const generateGmailDraft = async (): Promise<GenerateDraftResponse> => {
   const config = await getConfig();
   const activeTab = await getActiveTab();
@@ -52,21 +173,16 @@ const generateGmailDraft = async (): Promise<GenerateDraftResponse> => {
     };
   }
 
-  const oneNoteResponse = await sendMessageToTab<ExtractOneNoteResponse>(
+  const oneNoteResponse = await extractOneNoteTextFromTab(
     activeTab.id,
-    {
-      type: "EXTRACT_ONENOTE_TEXT",
-      config
-    },
-    1,
-    0
-  ).catch(() => null);
+    config.selectors.oneNoteRoot
+  );
 
-  if (!oneNoteResponse?.ok || !oneNoteResponse.text) {
+  if (!oneNoteResponse.ok || !oneNoteResponse.text) {
     return {
       ok: false,
       logs: [
-        "❌ No se pudo leer OneNote",
+        ...oneNoteResponse.logs,
         "Verificá que la pestaña activa sea OneNote Web y que el dominio esté permitido en manifest.json"
       ]
     };
@@ -79,6 +195,8 @@ const generateGmailDraft = async (): Promise<GenerateDraftResponse> => {
   );
   const fieldKeys = config.fieldMappings.map(mapping => mapping.key);
   const fieldLogs = buildFoundFieldLogs(data, fieldKeys);
+
+  console.log("Parsed OneNote data:", data);
 
   if (missingRequiredFields.length && !config.flags.allowIncompleteFields) {
     return {
@@ -138,20 +256,22 @@ const generateGmailDraft = async (): Promise<GenerateDraftResponse> => {
   };
 };
 
-chrome.runtime.onMessage.addListener((message: RuntimeMessage, _sender, sendResponse) => {
-  if (message.type !== "GENERATE_GMAIL_DRAFT") return false;
+chrome.runtime.onMessage.addListener(
+  (message: RuntimeMessage, _sender, sendResponse) => {
+    if (message.type !== "GENERATE_GMAIL_DRAFT") return false;
 
-  void generateGmailDraft()
-    .then(sendResponse)
-    .catch(error => {
-      sendResponse({
-        ok: false,
-        logs: [
-          "❌ Error inesperado al generar el draft",
-          error instanceof Error ? error.message : String(error)
-        ]
+    void generateGmailDraft()
+      .then(sendResponse)
+      .catch(error => {
+        sendResponse({
+          ok: false,
+          logs: [
+            "❌ Error inesperado al generar el draft",
+            error instanceof Error ? error.message : String(error)
+          ]
+        });
       });
-    });
 
-  return true;
-});
+    return true;
+  }
+);
