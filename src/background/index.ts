@@ -67,6 +67,41 @@ const extractOneNoteTextFromTab = async (
             .replace(/\n{3,}/g, "\n\n")
             .trim();
 
+        const parseRgbColor = (color: string): [number, number, number] | null => {
+          const rgbMatch = color.match(
+            /rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/i
+          );
+
+          if (rgbMatch) {
+            return [
+              Number(rgbMatch[1]),
+              Number(rgbMatch[2]),
+              Number(rgbMatch[3])
+            ];
+          }
+
+          const hexMatch = color.match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
+
+          if (hexMatch) {
+            return [
+              parseInt(hexMatch[1], 16),
+              parseInt(hexMatch[2], 16),
+              parseInt(hexMatch[3], 16)
+            ];
+          }
+
+          return null;
+        };
+
+        const isRedLike = (color: string): boolean => {
+          const rgb = parseRgbColor(color);
+          if (!rgb) return false;
+
+          const [r, g, b] = rgb;
+
+          return r >= 140 && g <= 130 && b <= 130 && r > g * 1.25 && r > b * 1.25;
+        };
+
         const safeQuerySelector = (value: string): Element | null => {
           try {
             return value ? document.querySelector(value) : null;
@@ -75,36 +110,72 @@ const extractOneNoteTextFromTab = async (
           }
         };
 
-        const getElementText = (element: Element | null): string => {
-          if (!element) return "";
-          const htmlElement = element as HTMLElement;
-          return htmlElement.innerText || htmlElement.textContent || "";
+        const removeUnwantedNodesFromClone = (
+          originalNode: Node,
+          cloneNode: Node
+        ): void => {
+          if (
+            originalNode.nodeType === Node.ELEMENT_NODE &&
+            cloneNode.nodeType === Node.ELEMENT_NODE
+          ) {
+            const originalElement = originalNode as Element;
+            const cloneElement = cloneNode as Element;
+            const style = window.getComputedStyle(originalElement);
+
+            if (
+              style.display === "none" ||
+              style.visibility === "hidden" ||
+              isRedLike(style.color)
+            ) {
+              cloneElement.remove();
+              return;
+            }
+          }
+
+          const originalChildren = Array.from(originalNode.childNodes);
+          const cloneChildren = Array.from(cloneNode.childNodes);
+
+          originalChildren.forEach((originalChild, index) => {
+            const cloneChild = cloneChildren[index];
+
+            if (cloneChild) {
+              removeUnwantedNodesFromClone(originalChild, cloneChild);
+            }
+          });
+        };
+
+        const extractTextWithoutRedContent = (root: Element): string => {
+          const clone = root.cloneNode(true) as HTMLElement;
+
+          clone
+            .querySelectorAll("script, style, noscript, svg")
+            .forEach(element => element.remove());
+
+          removeUnwantedNodesFromClone(root, clone);
+
+          const wrapper = document.createElement("div");
+
+          wrapper.style.position = "fixed";
+          wrapper.style.left = "-100000px";
+          wrapper.style.top = "0";
+          wrapper.style.width = "1200px";
+          wrapper.style.opacity = "0";
+          wrapper.style.pointerEvents = "none";
+          wrapper.style.zIndex = "-1";
+
+          wrapper.appendChild(clone);
+          document.body.appendChild(wrapper);
+
+          const text = wrapper.innerText || wrapper.textContent || "";
+
+          wrapper.remove();
+
+          return normalizeText(text);
         };
 
         const selectedRoot = safeQuerySelector(selector);
-        const rootText = getElementText(selectedRoot ?? document.body);
-
-        const contentEditableText = Array.from(
-          document.querySelectorAll<HTMLElement>("[contenteditable='true']")
-        )
-          .map(element => element.innerText || element.textContent || "")
-          .filter(Boolean)
-          .join("\n");
-
-        const roleTextboxText = Array.from(
-          document.querySelectorAll<HTMLElement>("[role='textbox']")
-        )
-          .map(element => element.innerText || element.textContent || "")
-          .filter(Boolean)
-          .join("\n");
-
-        const selectionText = window.getSelection()?.toString() ?? "";
-
-        const text = normalizeText(
-          [rootText, contentEditableText, roleTextboxText, selectionText]
-            .filter(Boolean)
-            .join("\n")
-        );
+        const root = selectedRoot ?? document.body;
+        const text = extractTextWithoutRedContent(root);
 
         return {
           url: window.location.href,
@@ -120,18 +191,14 @@ const extractOneNoteTextFromTab = async (
       .filter((result): result is ExtractedFrameText => Boolean(result?.text));
 
     const uniqueTexts = Array.from(
-      new Set(
-        frameResults
-          .map(result => result.text.trim())
-          .filter(Boolean)
-      )
+      new Set(frameResults.map(result => result.text.trim()).filter(Boolean))
     );
 
     const combinedText = uniqueTexts.join("\n\n").trim();
 
     console.log("OneNote extraction frames:", frameResults);
     console.log("OneNote extracted text length:", combinedText.length);
-    console.log("OneNote extracted text preview:", combinedText.slice(0, 2000));
+    console.log("OneNote extracted text preview:", combinedText.slice(0, 3000));
 
     if (!combinedText) {
       return {

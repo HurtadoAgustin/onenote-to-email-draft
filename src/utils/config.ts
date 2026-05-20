@@ -4,24 +4,75 @@ const CONFIG_STORAGE_KEY = "onenoteToMailDraftConfig";
 
 export const defaultConfig: ExtensionConfig = {
   mailUrl: "https://mail.google.com/mail/u/0/#inbox?compose=new",
-  subjectTemplate: "Ticket {{ticket}} - {{cliente}}",
+  subjectTemplate: "[Ticket] {{titulo}}",
   bodyTemplate: `
-<p>Hola,</p>
-<p>Compartimos el resumen del caso:</p>
-<ul>
-  <li><strong>Cliente:</strong> {{cliente}}</li>
-  <li><strong>Ticket:</strong> {{ticket}}</li>
-  <li><strong>Problema:</strong> {{problema}}</li>
-  <li><strong>Resolución:</strong> {{resolucion}}</li>
-</ul>
-{{firma}}
+<div style="font-family: Arial, sans-serif; font-size: 14px; color: #222;">
+  <p>Buenos días,</p>
+
+  <p>Te envío la estimación correspondiente al ticket. La misma deberá ser enviada a xxx.</p>
+
+  <h2 style="color: #1f4e79; font-size: 20px; font-weight: 400;">Título</h2>
+  <ul>
+    <li>{{titulo}}</li>
+  </ul>
+
+  <h2 style="color: #1f4e79; font-size: 20px; font-weight: 400;">Motivo de la Orden de Cambio</h2>
+  <ul>
+    <li>{{motivo}}</li>
+  </ul>
+
+  <h2 style="color: #1f4e79; font-size: 20px; font-weight: 400;">Descripción</h2>
+  <ul>
+    <li>{{descripcion}}</li>
+  </ul>
+
+  <h2 style="color: #1f4e79; font-size: 20px; font-weight: 400;">Condiciones de satisfacción</h2>
+
+  <p style="margin-left: 36px;"><strong>Cambios de comportamiento</strong></p>
+  <ul style="margin-left: 36px;">
+    {{cambios}}
+  </ul>
+
+  <p style="margin-left: 36px;"><strong>Condiciones de Integración con el ERP</strong></p>
+  <ul style="margin-left: 36px;">
+    {{integracion}}
+  </ul>
+
+  {{firma}}
+</div>
 `,
-  signatureHtml: "<p>Saludos,</p>",
+  signatureHtml: "",
   fieldMappings: [
-    { key: "cliente", labels: ["Cliente"], required: true },
-    { key: "ticket", labels: ["Ticket"], required: true },
-    { key: "problema", labels: ["Problema"], required: false },
-    { key: "resolucion", labels: ["Resolución", "Resolucion"], required: false }
+    {
+      key: "titulo",
+      labels: ["Title", "Título", "Titulo"],
+      required: true
+    },
+    {
+      key: "motivo",
+      labels: ["Change Order Reason", "Motivo de la Orden de Cambio"],
+      required: true
+    },
+    {
+      key: "descripcion",
+      labels: ["Description", "Descripción", "Descripcion"],
+      required: true
+    },
+    {
+      key: "cambios",
+      labels: ["Behavior changes", "Cambios de comportamiento"],
+      required: true
+    },
+    {
+      key: "integracion",
+      labels: [
+        "ERP Integration Conditions",
+        "ERP Integration Conditons",
+        "Condiciones de Integración con el ERP",
+        "Condiciones de Integracion con el ERP"
+      ],
+      required: false
+    }
   ],
   selectors: {
     oneNoteRoot: "",
