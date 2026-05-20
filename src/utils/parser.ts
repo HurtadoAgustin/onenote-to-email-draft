@@ -5,7 +5,11 @@ type ParsedLine = {
   text: string;
   normalized: string;
   level: number;
+  leadingWhitespaceCount: number;
+  bulletSymbol: string;
 };
+
+const PARSER_DEBUG_ENABLED = true;
 
 const normalizeForMatch = (value: string): string =>
   value
@@ -71,12 +75,16 @@ const parseLine = (rawLine: string): ParsedLine | null => {
   if (!text) return null;
 
   const level = getLineDepth(rawLine);
+  const leadingWhitespaceCount = getLeadingWhitespaceCount(rawLine);
+  const bulletSymbol = getBulletSymbol(rawLine);
 
   return {
     raw: rawLine,
     text,
     normalized: normalizeForMatch(text),
-    level
+    level,
+    leadingWhitespaceCount,
+    bulletSymbol
   };
 };
 
@@ -263,8 +271,38 @@ const joinAsParagraph = (lines: ParsedLine[]): string =>
     .replace(/\s+/g, " ")
     .trim();
 
+const toDebugRows = (lines: ParsedLine[]) =>
+  lines.map((line, index) => ({
+    index,
+    raw: line.raw,
+    text: line.text,
+    normalized: line.normalized,
+    level: line.level,
+    leadingWhitespaceCount: line.leadingWhitespaceCount,
+    bulletSymbol: line.bulletSymbol
+  }));
+
+const logParserSection = (title: string, lines: ParsedLine[]): void => {
+  if (!PARSER_DEBUG_ENABLED) return;
+
+  console.groupCollapsed(title);
+  console.table(toDebugRows(lines));
+  console.groupEnd();
+};
+
+const logParserDebug = (sections: Record<string, ParsedLine[]>): void => {
+  if (!PARSER_DEBUG_ENABLED) return;
+
+  console.groupCollapsed("🧩 OneNote parser debug");
+  Object.entries(sections).forEach(([sectionName, sectionLines]) => {
+    logParserSection(sectionName, sectionLines);
+  });
+  console.groupEnd();
+};
+
 const parseChangeOrderDocumentation = (text: string): TemplateData => {
-  const lines = removeExampleBlocks(getLines(text));
+  const rawLines = getLines(text);
+  const lines = removeExampleBlocks(rawLines);
 
   const sectionAfterConditionsStops = [
     headingGroups.keyCommunicationPoints,
@@ -314,12 +352,31 @@ const parseChangeOrderDocumentation = (text: string): TemplateData => {
     )
   );
 
+  const cambios = normalizeListLevels(behaviorChangeLines);
+  const integracion = normalizeListLevels(erpIntegrationLines);
+
+  logParserDebug({
+    rawLines,
+    linesAfterRemovingExamples: lines,
+    titleLines,
+    descriptionLines,
+    reasonLines,
+    conditionsLines,
+    behaviorChangeLines,
+    erpIntegrationLines
+  });
+
+  console.log("OneNote parser list data:", {
+    cambios,
+    integracion
+  });
+
   return {
     titulo: joinAsParagraph(titleLines),
     descripcion: joinAsParagraph(descriptionLines),
     motivo: joinAsParagraph(reasonLines),
-    cambios: normalizeListLevels(behaviorChangeLines),
-    integracion: normalizeListLevels(erpIntegrationLines)
+    cambios,
+    integracion
   };
 };
 
