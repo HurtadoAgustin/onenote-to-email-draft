@@ -21,6 +21,7 @@ export type ExtensionConfig = {
   subjectTemplate: string;
   bodyTemplate: string;
   signatureHtml: string;
+  emptyFieldFallback: string;
   fieldMappings: FieldMapping[];
   selectors: ExtensionSelectors;
   flags: ExtensionFlags;

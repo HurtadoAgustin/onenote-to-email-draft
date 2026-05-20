@@ -42,6 +42,7 @@ export const defaultConfig: ExtensionConfig = {
 </div>
 `,
   signatureHtml: "",
+  emptyFieldFallback: "",
   fieldMappings: [
     {
       key: "titulo",
@@ -89,6 +90,7 @@ export const defaultConfig: ExtensionConfig = {
 const mergeConfig = (storedConfig?: Partial<ExtensionConfig>): ExtensionConfig => ({
   ...defaultConfig,
   ...storedConfig,
+  emptyFieldFallback: storedConfig?.emptyFieldFallback ?? defaultConfig.emptyFieldFallback,
   selectors: {
     ...defaultConfig.selectors,
     ...storedConfig?.selectors

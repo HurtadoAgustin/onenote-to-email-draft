@@ -9,12 +9,18 @@ const normalizeForMatch = (value: string): string =>
     .trim()
     .toLowerCase();
 
-const cleanLine = (value: string): string =>
-  value
-    .replace(/^[•·▪▫◦‣⁃-]\s*/, "")
+const cleanLine = (value: string): string => {
+  const cleanedValue = value
+    .replace(/^[•·▪▫◦‣⁃○●□■◇◆-]\s*/, "")
     .replace(/^[oO]\s+/, "")
+    .replace(/^o(?=[A-ZÁÉÍÓÚÑ])/, "")
     .replace(/\s+/g, " ")
     .trim();
+
+  return /^(?:[•·▪▫◦‣⁃○●□■◇◆-]|o|O)$/u.test(cleanedValue)
+    ? ""
+    : cleanedValue;
+};
 
 const getLines = (text: string): string[] =>
   text
@@ -47,6 +53,30 @@ const headingGroups = {
     "erp integration condition",
     "condiciones de integracion con el erp",
     "condiciones de integración con el erp"
+  ],
+  keyCommunicationPoints: [
+    "key communication points",
+    "puntos clave de comunicacion",
+    "puntos clave de comunicación"
+  ],
+  originalRequest: [
+    "original request",
+    "solicitud original",
+    "pedido original"
+  ],
+  fullName: ["full name", "nombre completo"],
+  role: ["role", "rol"],
+  originalEmailFileRequest: [
+    "original email/file with request",
+    "original email file with request",
+    "email original",
+    "archivo original"
+  ],
+  clientModule: ["client & module", "client and module", "cliente y modulo", "cliente y módulo"],
+  originalHelpDeskTicket: [
+    "original helpdesk ticket (sh/hd)",
+    "original helpdesk ticket",
+    "ticket original helpdesk"
   ],
   example: ["example", "ejemplo"]
 };
@@ -131,35 +161,47 @@ const joinAsParagraph = (lines: string[]): string =>
 const parseChangeOrderDocumentation = (text: string): Record<string, string> => {
   const lines = removeExampleBlocks(getLines(text));
 
+  const postConditionsHeadings = [
+    headingGroups.keyCommunicationPoints,
+    headingGroups.originalRequest,
+    headingGroups.fullName,
+    headingGroups.role,
+    headingGroups.originalEmailFileRequest,
+    headingGroups.clientModule,
+    headingGroups.originalHelpDeskTicket
+  ];
+
   const titleLines = getSectionLines(lines, headingGroups.title, [
     headingGroups.description
   ]);
 
   const descriptionLines = getSectionLines(lines, headingGroups.description, [
     headingGroups.changeOrderReason,
-    headingGroups.conditionsOfSatisfaction
+    headingGroups.conditionsOfSatisfaction,
+    ...postConditionsHeadings
   ]);
 
   const reasonLines = getSectionLines(lines, headingGroups.changeOrderReason, [
-    headingGroups.conditionsOfSatisfaction
+    headingGroups.conditionsOfSatisfaction,
+    ...postConditionsHeadings
   ]);
 
   const conditionsLines = getSectionLines(
     lines,
     headingGroups.conditionsOfSatisfaction,
-    []
+    postConditionsHeadings
   );
 
   const behaviorChangeLines = getSectionLines(
     conditionsLines,
     headingGroups.behaviorChanges,
-    [headingGroups.erpIntegrationConditions]
+    [headingGroups.erpIntegrationConditions, ...postConditionsHeadings]
   );
 
   const erpIntegrationLines = getSectionLines(
     conditionsLines,
     headingGroups.erpIntegrationConditions,
-    []
+    postConditionsHeadings
   );
 
   return {

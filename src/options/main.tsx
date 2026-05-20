@@ -102,6 +102,15 @@ const App = () => {
             onChange={event => updateConfigField("signatureHtml", event.target.value)}
           />
         </label>
+
+        <label>
+          En caso de vacío completar con
+          <input
+            placeholder="Ej: No aplica"
+            value={config.emptyFieldFallback}
+            onChange={event => updateConfigField("emptyFieldFallback", event.target.value)}
+          />
+        </label>
       </section>
 
       <section className="card">

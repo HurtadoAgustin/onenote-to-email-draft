@@ -48,6 +48,23 @@ const buildFoundFieldLogs = (
     data[key] ? `✅ ${key} encontrado` : `⚠️ ${key} faltante`
   );
 
+const applyEmptyFieldFallback = (
+  data: Record<string, string>,
+  fieldKeys: string[],
+  emptyFieldFallback: string
+): Record<string, string> => {
+  const fallback = emptyFieldFallback.trim();
+
+  if (!fallback) return data;
+
+  return fieldKeys.reduce<Record<string, string>>((acc, key) => ({
+    ...acc,
+    [key]: acc[key]?.trim() ? acc[key] : fallback
+  }), {
+    ...data
+  });
+};
+
 const extractOneNoteTextFromTab = async (
   tabId: number,
   rootSelector?: string
@@ -262,8 +279,14 @@ const generateGmailDraft = async (): Promise<GenerateDraftResponse> => {
   );
   const fieldKeys = config.fieldMappings.map(mapping => mapping.key);
   const fieldLogs = buildFoundFieldLogs(data, fieldKeys);
+  const dataForTemplate = applyEmptyFieldFallback(
+    data,
+    fieldKeys,
+    config.emptyFieldFallback
+  );
 
   console.log("Parsed OneNote data:", data);
+  console.log("Data used for Gmail template:", dataForTemplate);
 
   if (missingRequiredFields.length && !config.flags.allowIncompleteFields) {
     return {
@@ -277,9 +300,9 @@ const generateGmailDraft = async (): Promise<GenerateDraftResponse> => {
   }
 
   const signatureHtml = config.flags.insertSignature ? config.signatureHtml : "";
-  const subject = renderTemplate(config.subjectTemplate, data);
+  const subject = renderTemplate(config.subjectTemplate, dataForTemplate);
   const html = renderTemplate(config.bodyTemplate, {
-    ...data,
+    ...dataForTemplate,
     firma: signatureHtml
   });
 
