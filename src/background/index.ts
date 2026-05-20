@@ -5,7 +5,9 @@ import type {
   ExtractOneNoteResponse,
   GenerateDraftResponse,
   InsertGmailDraftResponse,
-  RuntimeMessage
+  RuntimeMessage,
+  TemplateData,
+  TemplateValue
 } from "../utils/types";
 
 type ExtractedFrameText = {
@@ -41,25 +43,32 @@ const getActiveTab = async (): Promise<chrome.tabs.Tab | null> => {
 };
 
 const buildFoundFieldLogs = (
-  data: Record<string, string>,
+  data: TemplateData,
   fieldKeys: string[]
 ): string[] =>
   fieldKeys.map(key =>
-    data[key] ? `✅ ${key} encontrado` : `⚠️ ${key} faltante`
+    isEmptyTemplateValue(data[key])
+      ? `⚠️ ${key} faltante`
+      : `✅ ${key} encontrado`
   );
 
+const isEmptyTemplateValue = (value: TemplateValue | undefined): boolean => {
+  if (Array.isArray(value)) return value.length === 0;
+  return !value?.trim();
+};
+
 const applyEmptyFieldFallback = (
-  data: Record<string, string>,
+  data: TemplateData,
   fieldKeys: string[],
   emptyFieldFallback: string
-): Record<string, string> => {
+): TemplateData => {
   const fallback = emptyFieldFallback.trim();
 
   if (!fallback) return data;
 
-  return fieldKeys.reduce<Record<string, string>>((acc, key) => ({
+  return fieldKeys.reduce<TemplateData>((acc, key) => ({
     ...acc,
-    [key]: acc[key]?.trim() ? acc[key] : fallback
+    [key]: isEmptyTemplateValue(acc[key]) ? fallback : acc[key]
   }), {
     ...data
   });
@@ -80,7 +89,10 @@ const extractOneNoteTextFromTab = async (
         const normalizeText = (value: string): string =>
           value
             .replace(/\u00a0/g, " ")
-            .replace(/[ \t]+/g, " ")
+            .replace(/\r/g, "\n")
+            .split("\n")
+            .map(line => line.replace(/[ \t]+$/g, ""))
+            .join("\n")
             .replace(/\n{3,}/g, "\n\n")
             .trim();
 

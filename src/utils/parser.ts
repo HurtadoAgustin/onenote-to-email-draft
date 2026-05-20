@@ -1,4 +1,11 @@
-import type { FieldMapping } from "./types";
+import type { FieldMapping, ParsedListItem, TemplateData, TemplateValue } from "./types";
+
+type ParsedLine = {
+  raw: string;
+  text: string;
+  normalized: string;
+  level: number;
+};
 
 const normalizeForMatch = (value: string): string =>
   value
@@ -9,12 +16,18 @@ const normalizeForMatch = (value: string): string =>
     .trim()
     .toLowerCase();
 
-const getLeadingWhitespaceCount = (value: string): number =>
-  value.length - value.trimStart().length;
+const getLeadingWhitespaceCount = (value: string): number => {
+  const leadingWhitespace = value.match(/^[\t ]*/)?.[0] ?? "";
+
+  return Array.from(leadingWhitespace).reduce(
+    (count, character) => count + (character === "\t" ? 4 : 1),
+    0
+  );
+};
 
 const getBulletSymbol = (value: string): string => {
   const trimmed = value.trimStart();
-  const symbolMatch = trimmed.match(/^([•·▪▫◦○●‣⁃-])/);
+  const symbolMatch = trimmed.match(/^([•·▪▫◦○●■□‣⁃-])/);
 
   if (symbolMatch) return symbolMatch[1];
 
@@ -27,11 +40,15 @@ const getLineDepth = (value: string): number => {
   const leadingWhitespaceCount = getLeadingWhitespaceCount(value);
   const bulletSymbol = getBulletSymbol(value);
 
-  if (["▪", "▫", "‣", "⁃"].includes(bulletSymbol)) {
+  if (["▪", "▫", "■", "□", "‣", "⁃"].includes(bulletSymbol)) {
     return 1;
   }
 
-  if (bulletSymbol && leadingWhitespaceCount >= 6) {
+  if (bulletSymbol && leadingWhitespaceCount >= 4) {
+    return 1;
+  }
+
+  if (!bulletSymbol && leadingWhitespaceCount >= 4) {
     return 1;
   }
 
@@ -40,25 +57,35 @@ const getLineDepth = (value: string): number => {
 
 const stripLeadingBullet = (value: string): string =>
   value
-    .replace(/^\s*[•·▪▫◦○●‣⁃-]+\s*/, "")
+    .replace(/^\s*[•·▪▫◦○●■□‣⁃-]+\s*/, "")
     .replace(/^\s*[oO](?=\s|[A-ZÁÉÍÓÚÑ])\s*/, "");
 
-const cleanLine = (value: string): string =>
+const cleanText = (value: string): string =>
   stripLeadingBullet(value)
     .replace(/\s+/g, " ")
     .trim();
 
-const getLines = (text: string): string[] =>
+const parseLine = (rawLine: string): ParsedLine | null => {
+  const text = cleanText(rawLine);
+
+  if (!text) return null;
+
+  const level = getLineDepth(rawLine);
+
+  return {
+    raw: rawLine,
+    text,
+    normalized: normalizeForMatch(text),
+    level
+  };
+};
+
+const getLines = (text: string): ParsedLine[] =>
   text
     .replace(/\r/g, "\n")
     .split("\n")
-    .map(rawLine => {
-      const depth = getLineDepth(rawLine);
-      const line = cleanLine(rawLine);
-
-      return line ? `${"\t".repeat(depth)}${line}` : "";
-    })
-    .filter(Boolean);
+    .map(parseLine)
+    .filter((line): line is ParsedLine => Boolean(line));
 
 const headingGroups = {
   title: ["title", "titulo", "título"],
@@ -80,6 +107,7 @@ const headingGroups = {
   ],
   erpIntegrationConditions: [
     "erp integration conditions",
+    "erp integration conditons",
     "condiciones de integracion con el erp",
     "condiciones de integración con el erp"
   ],
@@ -116,32 +144,28 @@ const allKnownHeadings = Object.values(headingGroups)
   .flat()
   .map(normalizeForMatch);
 
-const isSameOrStartsWithHeading = (line: string, label: string): boolean => {
-  const normalizedLine = normalizeForMatch(line);
+const isSameOrStartsWithHeading = (line: ParsedLine, label: string): boolean => {
   const normalizedLabel = normalizeForMatch(label);
 
   return (
-    normalizedLine === normalizedLabel ||
-    normalizedLine.startsWith(`${normalizedLabel} `)
+    line.normalized === normalizedLabel ||
+    line.normalized.startsWith(`${normalizedLabel} `)
   );
 };
 
-const isHeading = (line: string, labels: string[]): boolean =>
+const isHeading = (line: ParsedLine, labels: string[]): boolean =>
   labels.some(label => isSameOrStartsWithHeading(line, label));
 
-const isAnyKnownHeading = (line: string): boolean => {
-  const normalizedLine = normalizeForMatch(line);
-
-  return allKnownHeadings.some(
-    heading => normalizedLine === heading || normalizedLine.startsWith(`${heading} `)
+const isAnyKnownHeading = (line: ParsedLine): boolean =>
+  allKnownHeadings.some(
+    heading => line.normalized === heading || line.normalized.startsWith(`${heading} `)
   );
-};
 
-const isBulletOnlyLine = (line: string): boolean =>
-  /^[oO○◦●•·▪▫‣⁃-]$/.test(line.trim());
+const isBulletOnlyLine = (line: ParsedLine): boolean =>
+  /^[oO○◦●•·▪▫■□‣⁃-]$/.test(line.text.trim());
 
-const removeExampleBlocks = (lines: string[]): string[] => {
-  const result: string[] = [];
+const removeExampleBlocks = (lines: ParsedLine[]): ParsedLine[] => {
+  const result: ParsedLine[] = [];
   let isSkippingExampleBlock = false;
 
   lines.forEach(line => {
@@ -163,20 +187,20 @@ const removeExampleBlocks = (lines: string[]): string[] => {
 };
 
 const findHeadingIndex = (
-  lines: string[],
+  lines: ParsedLine[],
   labels: string[],
   startIndex = 0
 ): number =>
   lines.findIndex((line, index) => index >= startIndex && isHeading(line, labels));
 
-const isStopLine = (line: string, endLabels: string[][]): boolean =>
+const isStopLine = (line: ParsedLine, endLabels: string[][]): boolean =>
   endLabels.some(labels => isHeading(line, labels));
 
 const getSectionLines = (
-  lines: string[],
+  lines: ParsedLine[],
   startLabels: string[],
   endLabels: string[][]
-): string[] => {
+): ParsedLine[] => {
   const startIndex = findHeadingIndex(lines, startLabels);
 
   if (startIndex < 0) return [];
@@ -189,18 +213,18 @@ const getSectionLines = (
 };
 
 const trimAtFirstStopLine = (
-  lines: string[],
+  lines: ParsedLine[],
   stopLabels: string[][]
-): string[] => {
+): ParsedLine[] => {
   const stopIndex = lines.findIndex(line => isStopLine(line, stopLabels));
 
   return stopIndex >= 0 ? lines.slice(0, stopIndex) : lines;
 };
 
-const removeEmptyVisualItems = (lines: string[]): string[] =>
+const removeEmptyVisualItems = (lines: ParsedLine[]): ParsedLine[] =>
   lines.filter(line => !isBulletOnlyLine(line));
 
-const sanitizeErpIntegrationLines = (lines: string[]): string[] => {
+const sanitizeErpIntegrationLines = (lines: ParsedLine[]): ParsedLine[] => {
   const strictStopLabels = [
     headingGroups.keyCommunicationPoints,
     headingGroups.originalRequest,
@@ -216,29 +240,30 @@ const sanitizeErpIntegrationLines = (lines: string[]): string[] => {
   return removeEmptyVisualItems(trimAtFirstStopLine(lines, strictStopLabels));
 };
 
-const cleanListLinePreservingDepth = (line: string): string => {
-  const depth = line.match(/^\t+/)?.[0].length ?? 0;
-  const cleaned = cleanLine(line);
+const normalizeListLevels = (lines: ParsedLine[]): ParsedListItem[] => {
+  const filteredLines = removeEmptyVisualItems(lines).filter(
+    line => line.text && !isAnyKnownHeading(line)
+  );
 
-  return cleaned ? `${"\t".repeat(Math.min(depth, 1))}${cleaned}` : "";
+  const minLevel = filteredLines.length
+    ? Math.min(...filteredLines.map(line => line.level))
+    : 0;
+
+  return filteredLines.map(line => ({
+    text: line.text,
+    level: Math.max(0, line.level - minLevel)
+  }));
 };
 
-const joinAsText = (lines: string[]): string =>
+const joinAsParagraph = (lines: ParsedLine[]): string =>
   lines
-    .map(cleanListLinePreservingDepth)
-    .filter(Boolean)
-    .join("\n")
-    .trim();
-
-const joinAsParagraph = (lines: string[]): string =>
-  lines
-    .map(cleanLine)
+    .map(line => line.text)
     .filter(Boolean)
     .join(" ")
     .replace(/\s+/g, " ")
     .trim();
 
-const parseChangeOrderDocumentation = (text: string): Record<string, string> => {
+const parseChangeOrderDocumentation = (text: string): TemplateData => {
   const lines = removeExampleBlocks(getLines(text));
 
   const sectionAfterConditionsStops = [
@@ -293,8 +318,8 @@ const parseChangeOrderDocumentation = (text: string): Record<string, string> => 
     titulo: joinAsParagraph(titleLines),
     descripcion: joinAsParagraph(descriptionLines),
     motivo: joinAsParagraph(reasonLines),
-    cambios: joinAsText(removeEmptyVisualItems(behaviorChangeLines)),
-    integracion: joinAsText(erpIntegrationLines)
+    cambios: normalizeListLevels(behaviorChangeLines),
+    integracion: normalizeListLevels(erpIntegrationLines)
   };
 };
 
@@ -304,26 +329,29 @@ const escapeRegExp = (value: string): string =>
 const parseLabelValueText = (
   text: string,
   mappings: FieldMapping[]
-): Record<string, string> => {
+): TemplateData => {
   const lines = getLines(text);
 
-  return mappings.reduce<Record<string, string>>((acc, mapping) => {
+  return mappings.reduce<TemplateData>((acc, mapping) => {
     const foundLine = lines.find(line =>
-      mapping.labels.some(label =>
-        normalizeForMatch(line).startsWith(`${normalizeForMatch(label)} `) ||
-        normalizeForMatch(line).startsWith(`${normalizeForMatch(label)}:`)
-      )
+      mapping.labels.some(label => {
+        const normalizedLabel = normalizeForMatch(label);
+        return (
+          line.normalized.startsWith(`${normalizedLabel} `) ||
+          line.normalized.startsWith(`${normalizedLabel}:`)
+        );
+      })
     );
 
     if (!foundLine) return acc;
 
     const matchedLabel = mapping.labels.find(label =>
-      normalizeForMatch(foundLine).startsWith(normalizeForMatch(label))
+      foundLine.normalized.startsWith(normalizeForMatch(label))
     );
 
     if (!matchedLabel) return acc;
 
-    const value = foundLine
+    const value = foundLine.text
       .replace(new RegExp(`^${escapeRegExp(matchedLabel)}\\s*[:：]?\\s*`, "i"), "")
       .trim();
 
@@ -333,12 +361,19 @@ const parseLabelValueText = (
   }, {});
 };
 
+const isEmptyValue = (value: TemplateValue | undefined): boolean => {
+  if (Array.isArray(value)) return value.length === 0;
+  return !value?.trim();
+};
+
 export const parseStructuredText = (
   text: string,
   mappings: FieldMapping[]
-): Record<string, string> => {
+): TemplateData => {
   const documentationData = parseChangeOrderDocumentation(text);
-  const hasDocumentationData = Object.values(documentationData).some(Boolean);
+  const hasDocumentationData = Object.values(documentationData).some(
+    value => !isEmptyValue(value)
+  );
 
   if (hasDocumentationData) {
     return documentationData;
@@ -348,10 +383,10 @@ export const parseStructuredText = (
 };
 
 export const getMissingRequiredFields = (
-  data: Record<string, string>,
+  data: TemplateData,
   mappings: FieldMapping[]
 ): string[] =>
   mappings
     .filter(mapping => mapping.required)
-    .filter(mapping => !data[mapping.key])
+    .filter(mapping => isEmptyValue(data[mapping.key]))
     .map(mapping => mapping.key);

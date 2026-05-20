@@ -4,6 +4,15 @@ export type FieldMapping = {
   required?: boolean;
 };
 
+export type ParsedListItem = {
+  text: string;
+  level: number;
+};
+
+export type TemplateValue = string | ParsedListItem[];
+
+export type TemplateData = Record<string, TemplateValue>;
+
 export type ExtensionSelectors = {
   oneNoteRoot?: string;
   gmailComposeDialog?: string;
