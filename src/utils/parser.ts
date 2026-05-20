@@ -9,18 +9,12 @@ const normalizeForMatch = (value: string): string =>
     .trim()
     .toLowerCase();
 
-const cleanLine = (value: string): string => {
-  const cleanedValue = value
-    .replace(/^[•·▪▫◦‣⁃○●□■◇◆-]\s*/, "")
+const cleanLine = (value: string): string =>
+  value
+    .replace(/^[•·▪▫◦‣⁃-]\s+/, "")
     .replace(/^[oO]\s+/, "")
-    .replace(/^o(?=[A-ZÁÉÍÓÚÑ])/, "")
     .replace(/\s+/g, " ")
     .trim();
-
-  return /^(?:[•·▪▫◦‣⁃○●□■◇◆-]|o|O)$/u.test(cleanedValue)
-    ? ""
-    : cleanedValue;
-};
 
 const getLines = (text: string): string[] =>
   text
@@ -49,8 +43,6 @@ const headingGroups = {
   ],
   erpIntegrationConditions: [
     "erp integration conditions",
-    "erp integration conditons",
-    "erp integration condition",
     "condiciones de integracion con el erp",
     "condiciones de integración con el erp"
   ],
@@ -62,21 +54,23 @@ const headingGroups = {
   originalRequest: [
     "original request",
     "solicitud original",
-    "pedido original"
+    "pedido original",
+    "requerimiento original"
   ],
-  fullName: ["full name", "nombre completo"],
-  role: ["role", "rol"],
-  originalEmailFileRequest: [
+  originalRequestTableFields: [
+    "full name",
+    "role",
     "original email/file with request",
-    "original email file with request",
-    "email original",
-    "archivo original"
-  ],
-  clientModule: ["client & module", "client and module", "cliente y modulo", "cliente y módulo"],
-  originalHelpDeskTicket: [
+    "client & module",
+    "client and module",
     "original helpdesk ticket (sh/hd)",
-    "original helpdesk ticket",
-    "ticket original helpdesk"
+    "original helpdesk ticket sh/hd"
+  ],
+  acceptanceMarkers: [
+    "acceptance of functionality attached",
+    "acceptance of functionality in qa",
+    "completed in qa",
+    "em file"
   ],
   example: ["example", "ejemplo"]
 };
@@ -85,16 +79,29 @@ const allKnownHeadings = Object.values(headingGroups)
   .flat()
   .map(normalizeForMatch);
 
-const isHeading = (line: string, labels: string[]): boolean => {
+const isSameOrStartsWithHeading = (line: string, label: string): boolean => {
   const normalizedLine = normalizeForMatch(line);
+  const normalizedLabel = normalizeForMatch(label);
 
-  return labels
-    .map(normalizeForMatch)
-    .some(label => normalizedLine === label);
+  return (
+    normalizedLine === normalizedLabel ||
+    normalizedLine.startsWith(`${normalizedLabel} `)
+  );
 };
 
-const isAnyKnownHeading = (line: string): boolean =>
-  allKnownHeadings.includes(normalizeForMatch(line));
+const isHeading = (line: string, labels: string[]): boolean =>
+  labels.some(label => isSameOrStartsWithHeading(line, label));
+
+const isAnyKnownHeading = (line: string): boolean => {
+  const normalizedLine = normalizeForMatch(line);
+
+  return allKnownHeadings.some(
+    heading => normalizedLine === heading || normalizedLine.startsWith(`${heading} `)
+  );
+};
+
+const isBulletOnlyLine = (line: string): boolean =>
+  /^[oO○◦●•·▪▫‣⁃-]$/.test(line.trim());
 
 const removeExampleBlocks = (lines: string[]): string[] => {
   const result: string[] = [];
@@ -125,6 +132,9 @@ const findHeadingIndex = (
 ): number =>
   lines.findIndex((line, index) => index >= startIndex && isHeading(line, labels));
 
+const isStopLine = (line: string, endLabels: string[][]): boolean =>
+  endLabels.some(labels => isHeading(line, labels));
+
 const getSectionLines = (
   lines: string[],
   startLabels: string[],
@@ -134,13 +144,39 @@ const getSectionLines = (
 
   if (startIndex < 0) return [];
 
-  const endIndexes = endLabels
-    .map(labels => findHeadingIndex(lines, labels, startIndex + 1))
-    .filter(index => index >= 0);
+  const endIndex = lines.findIndex(
+    (line, index) => index > startIndex && isStopLine(line, endLabels)
+  );
 
-  const endIndex = endIndexes.length ? Math.min(...endIndexes) : lines.length;
+  return lines.slice(startIndex + 1, endIndex >= 0 ? endIndex : lines.length);
+};
 
-  return lines.slice(startIndex + 1, endIndex);
+const trimAtFirstStopLine = (
+  lines: string[],
+  stopLabels: string[][]
+): string[] => {
+  const stopIndex = lines.findIndex(line => isStopLine(line, stopLabels));
+
+  return stopIndex >= 0 ? lines.slice(0, stopIndex) : lines;
+};
+
+const removeEmptyVisualItems = (lines: string[]): string[] =>
+  lines.filter(line => !isBulletOnlyLine(line));
+
+const sanitizeErpIntegrationLines = (lines: string[]): string[] => {
+  const strictStopLabels = [
+    headingGroups.keyCommunicationPoints,
+    headingGroups.originalRequest,
+    headingGroups.originalRequestTableFields,
+    headingGroups.acceptanceMarkers,
+    headingGroups.title,
+    headingGroups.description,
+    headingGroups.changeOrderReason,
+    headingGroups.conditionsOfSatisfaction,
+    headingGroups.behaviorChanges
+  ];
+
+  return removeEmptyVisualItems(trimAtFirstStopLine(lines, strictStopLabels));
 };
 
 const joinAsText = (lines: string[]): string =>
@@ -161,57 +197,65 @@ const joinAsParagraph = (lines: string[]): string =>
 const parseChangeOrderDocumentation = (text: string): Record<string, string> => {
   const lines = removeExampleBlocks(getLines(text));
 
-  const postConditionsHeadings = [
+  const sectionAfterConditionsStops = [
     headingGroups.keyCommunicationPoints,
     headingGroups.originalRequest,
-    headingGroups.fullName,
-    headingGroups.role,
-    headingGroups.originalEmailFileRequest,
-    headingGroups.clientModule,
-    headingGroups.originalHelpDeskTicket
+    headingGroups.originalRequestTableFields,
+    headingGroups.acceptanceMarkers
   ];
 
   const titleLines = getSectionLines(lines, headingGroups.title, [
-    headingGroups.description
+    headingGroups.description,
+    headingGroups.changeOrderReason,
+    headingGroups.conditionsOfSatisfaction,
+    ...sectionAfterConditionsStops
   ]);
 
   const descriptionLines = getSectionLines(lines, headingGroups.description, [
     headingGroups.changeOrderReason,
     headingGroups.conditionsOfSatisfaction,
-    ...postConditionsHeadings
+    ...sectionAfterConditionsStops
   ]);
 
   const reasonLines = getSectionLines(lines, headingGroups.changeOrderReason, [
     headingGroups.conditionsOfSatisfaction,
-    ...postConditionsHeadings
+    ...sectionAfterConditionsStops
   ]);
 
   const conditionsLines = getSectionLines(
     lines,
     headingGroups.conditionsOfSatisfaction,
-    postConditionsHeadings
+    sectionAfterConditionsStops
   );
 
   const behaviorChangeLines = getSectionLines(
     conditionsLines,
     headingGroups.behaviorChanges,
-    [headingGroups.erpIntegrationConditions, ...postConditionsHeadings]
+    [
+      headingGroups.erpIntegrationConditions,
+      ...sectionAfterConditionsStops
+    ]
   );
 
-  const erpIntegrationLines = getSectionLines(
-    conditionsLines,
-    headingGroups.erpIntegrationConditions,
-    postConditionsHeadings
+  const erpIntegrationLines = sanitizeErpIntegrationLines(
+    getSectionLines(
+      conditionsLines,
+      headingGroups.erpIntegrationConditions,
+      sectionAfterConditionsStops
+    )
   );
 
   return {
     titulo: joinAsParagraph(titleLines),
     descripcion: joinAsParagraph(descriptionLines),
     motivo: joinAsParagraph(reasonLines),
-    cambios: joinAsText(behaviorChangeLines),
+    cambios: joinAsText(removeEmptyVisualItems(behaviorChangeLines)),
     integracion: joinAsText(erpIntegrationLines)
   };
 };
+
+const escapeRegExp = (value: string): string =>
+  value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 const parseLabelValueText = (
   text: string,
@@ -221,15 +265,10 @@ const parseLabelValueText = (
 
   return mappings.reduce<Record<string, string>>((acc, mapping) => {
     const foundLine = lines.find(line =>
-      mapping.labels.some(label => {
-        const normalizedLine = normalizeForMatch(line);
-        const normalizedLabel = normalizeForMatch(label);
-
-        return (
-          normalizedLine.startsWith(`${normalizedLabel} `) ||
-          normalizedLine.startsWith(`${normalizedLabel}:`)
-        );
-      })
+      mapping.labels.some(label =>
+        normalizeForMatch(line).startsWith(`${normalizeForMatch(label)} `) ||
+        normalizeForMatch(line).startsWith(`${normalizeForMatch(label)}:`)
+      )
     );
 
     if (!foundLine) return acc;
@@ -241,10 +280,10 @@ const parseLabelValueText = (
     if (!matchedLabel) return acc;
 
     const value = foundLine
-      .replace(new RegExp(`^${matchedLabel}\\s*[:：]?\\s*`, "i"), "")
+      .replace(new RegExp(`^${escapeRegExp(matchedLabel)}\\s*[:：]?\\s*`, "i"), "")
       .trim();
 
-    if (value) acc[mapping.key] = value;
+    acc[mapping.key] = value;
 
     return acc;
   }, {});
