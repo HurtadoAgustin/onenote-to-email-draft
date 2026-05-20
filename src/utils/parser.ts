@@ -9,10 +9,42 @@ const normalizeForMatch = (value: string): string =>
     .trim()
     .toLowerCase();
 
-const cleanLine = (value: string): string =>
+const getLeadingWhitespaceCount = (value: string): number =>
+  value.length - value.trimStart().length;
+
+const getBulletSymbol = (value: string): string => {
+  const trimmed = value.trimStart();
+  const symbolMatch = trimmed.match(/^([•·▪▫◦○●‣⁃-])/);
+
+  if (symbolMatch) return symbolMatch[1];
+
+  const letterBulletMatch = trimmed.match(/^([oO])(?=\s|[A-ZÁÉÍÓÚÑ])/);
+
+  return letterBulletMatch?.[1] ?? "";
+};
+
+const getLineDepth = (value: string): number => {
+  const leadingWhitespaceCount = getLeadingWhitespaceCount(value);
+  const bulletSymbol = getBulletSymbol(value);
+
+  if (["▪", "▫", "‣", "⁃"].includes(bulletSymbol)) {
+    return 1;
+  }
+
+  if (bulletSymbol && leadingWhitespaceCount >= 6) {
+    return 1;
+  }
+
+  return 0;
+};
+
+const stripLeadingBullet = (value: string): string =>
   value
-    .replace(/^[•·▪▫◦‣⁃-]\s+/, "")
-    .replace(/^[oO]\s+/, "")
+    .replace(/^\s*[•·▪▫◦○●‣⁃-]+\s*/, "")
+    .replace(/^\s*[oO](?=\s|[A-ZÁÉÍÓÚÑ])\s*/, "");
+
+const cleanLine = (value: string): string =>
+  stripLeadingBullet(value)
     .replace(/\s+/g, " ")
     .trim();
 
@@ -20,7 +52,12 @@ const getLines = (text: string): string[] =>
   text
     .replace(/\r/g, "\n")
     .split("\n")
-    .map(line => cleanLine(line))
+    .map(rawLine => {
+      const depth = getLineDepth(rawLine);
+      const line = cleanLine(rawLine);
+
+      return line ? `${"\t".repeat(depth)}${line}` : "";
+    })
     .filter(Boolean);
 
 const headingGroups = {
@@ -179,9 +216,16 @@ const sanitizeErpIntegrationLines = (lines: string[]): string[] => {
   return removeEmptyVisualItems(trimAtFirstStopLine(lines, strictStopLabels));
 };
 
+const cleanListLinePreservingDepth = (line: string): string => {
+  const depth = line.match(/^\t+/)?.[0].length ?? 0;
+  const cleaned = cleanLine(line);
+
+  return cleaned ? `${"\t".repeat(Math.min(depth, 1))}${cleaned}` : "";
+};
+
 const joinAsText = (lines: string[]): string =>
   lines
-    .map(cleanLine)
+    .map(cleanListLinePreservingDepth)
     .filter(Boolean)
     .join("\n")
     .trim();

@@ -9,13 +9,58 @@ export const escapeHtml = (value: string): string =>
 const htmlKeys = new Set(["firma"]);
 const listItemKeys = new Set(["cambios", "integracion"]);
 
-const renderListItems = (value: string): string =>
+type ListNode = {
+  text: string;
+  children: ListNode[];
+};
+
+const parseNestedListItems = (value: string): ListNode[] => {
+  const root: ListNode[] = [];
+  let lastRootItem: ListNode | null = null;
+
   value
     .split("\n")
-    .map(item => item.trim())
-    .filter(Boolean)
-    .map(item => `<li>${escapeHtml(item)}</li>`)
+    .map(line => {
+      const depth = line.match(/^\t+/)?.[0].length ?? 0;
+      const text = line.replace(/^\t+/, "").trim();
+
+      return {
+        depth,
+        text
+      };
+    })
+    .filter(item => item.text)
+    .forEach(item => {
+      const node: ListNode = {
+        text: item.text,
+        children: []
+      };
+
+      if (item.depth > 0 && lastRootItem) {
+        lastRootItem.children.push(node);
+        return;
+      }
+
+      root.push(node);
+      lastRootItem = node;
+    });
+
+  return root;
+};
+
+const renderNestedNodes = (nodes: ListNode[]): string =>
+  nodes
+    .map(node => {
+      const childrenHtml = node.children.length
+        ? `<ul>${renderNestedNodes(node.children)}</ul>`
+        : "";
+
+      return `<li>${escapeHtml(node.text)}${childrenHtml}</li>`;
+    })
     .join("");
+
+const renderListItems = (value: string): string =>
+  renderNestedNodes(parseNestedListItems(value));
 
 const renderValue = (key: string, value: string): string => {
   if (htmlKeys.has(key)) {
