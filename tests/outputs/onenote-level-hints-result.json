@@ -1,0 +1,87 @@
+{
+  "levelGroups": [
+    546,
+    582.31
+  ],
+  "matchedHints": [
+    {
+      "itemText": "Se debe tener en cuenta que el cambio no es retroactivo, y el mismo comenzará a registrar información de las nuevas Altas/Modificaciones que surjan a partir de la implementación del cambio. Las solicitudes ya abiertas que no hayan finalizado no registrará dicha información.",
+      "matchedText": "Se debe tener en cuenta que el cambio no es retroactivo, y el mismo comenzará a registrar información de las nuevas Altas/Modificaciones que surjan a partir de la implementación del cambio. Las solicitudes ya abiertas que no hayan finalizado no registrará dicha información.",
+      "rectLeft": 546,
+      "originalLevel": 0,
+      "inferredLevel": 0
+    },
+    {
+      "itemText": "The system will have a new feature toggle available to activate this functionality at Configuration level.",
+      "matchedText": "The system will have a new feature toggle available to activate this functionality at Configuration level.",
+      "rectLeft": 546,
+      "originalLevel": 0,
+      "inferredLevel": 0
+    },
+    {
+      "itemText": "This change will not impact previous sent invoices",
+      "matchedText": "This change will not impact previous sent invoices",
+      "rectLeft": 582.31,
+      "originalLevel": 0,
+      "inferredLevel": 1
+    },
+    {
+      "itemText": "The system will show a new field \"Comments\" at header level in the \"Invoice details\" pane.",
+      "matchedText": "The system will show a new field \"Comments\" at header level in the \"Invoice details\" pane.",
+      "rectLeft": 546.06,
+      "originalLevel": 0,
+      "inferredLevel": 0
+    },
+    {
+      "itemText": "The new Comments field will be optional.",
+      "matchedText": "The new Comments field will be optional.",
+      "rectLeft": 546.06,
+      "originalLevel": 0,
+      "inferredLevel": 0
+    },
+    {
+      "itemText": "In case the Comments field is empty, the system will suggest a standard comment to be specified by the customer.",
+      "matchedText": "In case the Comments field is empty, the system will suggest a standard comment to be specified by the customer.",
+      "rectLeft": 546,
+      "originalLevel": 0,
+      "inferredLevel": 0
+    },
+    {
+      "itemText": "When posting the document, the system will send this new value in the outgoing XML file.",
+      "matchedText": "When posting the document, the system will send this new value in the outgoing XML file.",
+      "rectLeft": 546.06,
+      "originalLevel": 0,
+      "inferredLevel": 0
+    }
+  ],
+  "result": [
+    {
+      "text": "Se debe tener en cuenta que el cambio no es retroactivo, y el mismo comenzará a registrar información de las nuevas Altas/Modificaciones que surjan a partir de la implementación del cambio. Las solicitudes ya abiertas que no hayan finalizado no registrará dicha información.",
+      "level": 0
+    },
+    {
+      "text": "The system will have a new feature toggle available to activate this functionality at Configuration level.",
+      "level": 0
+    },
+    {
+      "text": "This change will not impact previous sent invoices",
+      "level": 1
+    },
+    {
+      "text": "The system will show a new field \"Comments\" at header level in the \"Invoice details\" pane.",
+      "level": 0
+    },
+    {
+      "text": "The new Comments field will be optional.",
+      "level": 0
+    },
+    {
+      "text": "In case the Comments field is empty, the system will suggest a standard comment to be specified by the customer.",
+      "level": 0
+    },
+    {
+      "text": "When posting the document, the system will send this new value in the outgoing XML file.",
+      "level": 0
+    }
+  ]
+}

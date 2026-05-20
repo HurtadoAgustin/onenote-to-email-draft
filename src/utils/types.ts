@@ -9,6 +9,21 @@ export type ParsedListItem = {
   level: number;
 };
 
+export type OneNoteDomTextItem = {
+  index: number;
+  text: string;
+  closestListText: string;
+  className: string;
+  tagName: string;
+  rectLeft: number;
+  listItemRectLeft: number;
+  markerRectLeft: number;
+  markerMarginLeft: number;
+  computedLevelHint: number;
+  ariaLevel: number;
+  listStyleType: string;
+};
+
 export type TemplateValue = string | ParsedListItem[];
 
 export type TemplateData = Record<string, TemplateValue>;
@@ -44,6 +59,7 @@ export type GenerateDraftResponse = {
 export type ExtractOneNoteResponse = {
   ok: boolean;
   text?: string;
+  domTextItems?: OneNoteDomTextItem[];
   logs: string[];
 };
 

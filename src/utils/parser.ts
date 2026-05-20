@@ -1,21 +1,40 @@
-import type { FieldMapping, ParsedListItem, TemplateData, TemplateValue } from "./types";
+import type {
+  FieldMapping,
+  OneNoteDomTextItem,
+  ParsedListItem,
+  TemplateData,
+  TemplateValue
+} from "./types";
 
 type ParsedLine = {
   raw: string;
   text: string;
   normalized: string;
   level: number;
-  leadingWhitespaceCount: number;
-  bulletSymbol: string;
 };
 
-const PARSER_DEBUG_ENABLED = true;
+type MatchedDomHint = {
+  item: ParsedListItem;
+  hint?: OneNoteDomTextItem;
+};
+
+const LIST_LEVEL_TOLERANCE_PX = 18;
+const listKeys = new Set(["cambios", "integracion"]);
 
 const normalizeForMatch = (value: string): string =>
   value
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/[:：]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+
+const normalizeForDomLookup = (value: string): string =>
+  stripLeadingBullet(value)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\u00a0/g, " ")
     .replace(/\s+/g, " ")
     .trim()
     .toLowerCase();
@@ -75,16 +94,12 @@ const parseLine = (rawLine: string): ParsedLine | null => {
   if (!text) return null;
 
   const level = getLineDepth(rawLine);
-  const leadingWhitespaceCount = getLeadingWhitespaceCount(rawLine);
-  const bulletSymbol = getBulletSymbol(rawLine);
 
   return {
     raw: rawLine,
     text,
     normalized: normalizeForMatch(text),
-    level,
-    leadingWhitespaceCount,
-    bulletSymbol
+    level
   };
 };
 
@@ -271,38 +286,8 @@ const joinAsParagraph = (lines: ParsedLine[]): string =>
     .replace(/\s+/g, " ")
     .trim();
 
-const toDebugRows = (lines: ParsedLine[]) =>
-  lines.map((line, index) => ({
-    index,
-    raw: line.raw,
-    text: line.text,
-    normalized: line.normalized,
-    level: line.level,
-    leadingWhitespaceCount: line.leadingWhitespaceCount,
-    bulletSymbol: line.bulletSymbol
-  }));
-
-const logParserSection = (title: string, lines: ParsedLine[]): void => {
-  if (!PARSER_DEBUG_ENABLED) return;
-
-  console.groupCollapsed(title);
-  console.table(toDebugRows(lines));
-  console.groupEnd();
-};
-
-const logParserDebug = (sections: Record<string, ParsedLine[]>): void => {
-  if (!PARSER_DEBUG_ENABLED) return;
-
-  console.groupCollapsed("🧩 OneNote parser debug");
-  Object.entries(sections).forEach(([sectionName, sectionLines]) => {
-    logParserSection(sectionName, sectionLines);
-  });
-  console.groupEnd();
-};
-
 const parseChangeOrderDocumentation = (text: string): TemplateData => {
-  const rawLines = getLines(text);
-  const lines = removeExampleBlocks(rawLines);
+  const lines = removeExampleBlocks(getLines(text));
 
   const sectionAfterConditionsStops = [
     headingGroups.keyCommunicationPoints,
@@ -352,31 +337,12 @@ const parseChangeOrderDocumentation = (text: string): TemplateData => {
     )
   );
 
-  const cambios = normalizeListLevels(behaviorChangeLines);
-  const integracion = normalizeListLevels(erpIntegrationLines);
-
-  logParserDebug({
-    rawLines,
-    linesAfterRemovingExamples: lines,
-    titleLines,
-    descriptionLines,
-    reasonLines,
-    conditionsLines,
-    behaviorChangeLines,
-    erpIntegrationLines
-  });
-
-  console.log("OneNote parser list data:", {
-    cambios,
-    integracion
-  });
-
   return {
     titulo: joinAsParagraph(titleLines),
     descripcion: joinAsParagraph(descriptionLines),
     motivo: joinAsParagraph(reasonLines),
-    cambios,
-    integracion
+    cambios: normalizeListLevels(behaviorChangeLines),
+    integracion: normalizeListLevels(erpIntegrationLines)
   };
 };
 
@@ -421,6 +387,163 @@ const parseLabelValueText = (
 const isEmptyValue = (value: TemplateValue | undefined): boolean => {
   if (Array.isArray(value)) return value.length === 0;
   return !value?.trim();
+};
+
+const getDomHintScore = (
+  item: ParsedListItem,
+  hint: OneNoteDomTextItem,
+  lastMatchedIndex: number
+): number => {
+  const itemText = normalizeForDomLookup(item.text);
+  const hintText = normalizeForDomLookup(hint.text);
+  const closestListText = normalizeForDomLookup(hint.closestListText);
+
+  if (!itemText || !hintText) return Number.NEGATIVE_INFINITY;
+
+  let score = Number.NEGATIVE_INFINITY;
+
+  if (hintText === itemText) {
+    score = 10000;
+  } else if (closestListText === itemText) {
+    score = 8000;
+  } else if (closestListText.includes(itemText)) {
+    score = 5000;
+  } else if (itemText.includes(hintText) && hintText.length >= 20) {
+    score = 2000;
+  }
+
+  if (!Number.isFinite(score)) return score;
+
+  if (hint.index > lastMatchedIndex) score += 500;
+  if (hint.className.includes("NormalTextRun")) score += 80;
+  if (hint.className.includes("TextRun")) score += 40;
+
+  score -= Math.abs(hintText.length - itemText.length);
+
+  return score;
+};
+
+const findBestSequentialDomHints = (
+  items: ParsedListItem[],
+  domTextItems: OneNoteDomTextItem[]
+): MatchedDomHint[] => {
+  let lastMatchedIndex = -1;
+
+  return items.map(item => {
+    const candidates = domTextItems
+      .map(hint => ({
+        hint,
+        score: getDomHintScore(item, hint, lastMatchedIndex)
+      }))
+      .filter(candidate => Number.isFinite(candidate.score))
+      .sort((a, b) => {
+        if (b.score !== a.score) return b.score - a.score;
+        return a.hint.index - b.hint.index;
+      });
+
+    const bestFutureCandidate = candidates.find(
+      candidate => candidate.hint.index > lastMatchedIndex
+    );
+    const bestCandidate = bestFutureCandidate ?? candidates[0];
+
+    if (!bestCandidate) {
+      return { item };
+    }
+
+    lastMatchedIndex = bestCandidate.hint.index;
+
+    return {
+      item,
+      hint: bestCandidate.hint
+    };
+  });
+};
+
+const getNumericLevelSource = (hint: OneNoteDomTextItem): number => {
+  if (Number.isFinite(hint.rectLeft) && hint.rectLeft > 0) {
+    return hint.rectLeft;
+  }
+
+  if (Number.isFinite(hint.listItemRectLeft) && hint.listItemRectLeft > 0) {
+    return hint.listItemRectLeft;
+  }
+
+  if (Number.isFinite(hint.computedLevelHint) && hint.computedLevelHint > 0) {
+    return hint.computedLevelHint;
+  }
+
+  return 0;
+};
+
+const buildLevelGroups = (matchedHints: MatchedDomHint[]): number[] => {
+  const rawLevelSources = matchedHints
+    .map(matchedHint => matchedHint.hint)
+    .filter((hint): hint is OneNoteDomTextItem => Boolean(hint))
+    .map(getNumericLevelSource)
+    .filter(value => Number.isFinite(value) && value > 0)
+    .sort((a, b) => a - b);
+
+  return rawLevelSources.reduce<number[]>((groups, value) => {
+    const lastGroup = groups[groups.length - 1];
+
+    if (lastGroup === undefined || Math.abs(value - lastGroup) > LIST_LEVEL_TOLERANCE_PX) {
+      groups.push(value);
+    }
+
+    return groups;
+  }, []);
+};
+
+const getGroupedLevel = (value: number, groups: number[]): number => {
+  if (!groups.length || !Number.isFinite(value) || value <= 0) return 0;
+
+  const nearestIndex = groups.reduce(
+    (bestIndex, groupValue, index) => {
+      const bestDistance = Math.abs(value - groups[bestIndex]);
+      const currentDistance = Math.abs(value - groupValue);
+
+      return currentDistance < bestDistance ? index : bestIndex;
+    },
+    0
+  );
+
+  return Math.max(0, nearestIndex);
+};
+
+const applyDomLevelsToList = (
+  items: ParsedListItem[],
+  domTextItems: OneNoteDomTextItem[]
+): ParsedListItem[] => {
+  if (!items.length || !domTextItems.length) return items;
+
+  const matchedHints = findBestSequentialDomHints(items, domTextItems);
+  const levelGroups = buildLevelGroups(matchedHints);
+
+  return matchedHints.map(({ item, hint }) => {
+    if (!hint) return item;
+
+    return {
+      ...item,
+      level: getGroupedLevel(getNumericLevelSource(hint), levelGroups)
+    };
+  });
+};
+
+export const applyDomListLevelHints = (
+  data: TemplateData,
+  domTextItems: OneNoteDomTextItem[] = []
+): TemplateData => {
+  if (!domTextItems.length) return data;
+
+  return Object.entries(data).reduce<TemplateData>((acc, [key, value]) => {
+    if (!listKeys.has(key) || !Array.isArray(value)) {
+      acc[key] = value;
+      return acc;
+    }
+
+    acc[key] = applyDomLevelsToList(value, domTextItems);
+    return acc;
+  }, {});
 };
 
 export const parseStructuredText = (

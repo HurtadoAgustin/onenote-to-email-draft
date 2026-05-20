@@ -1,0 +1,345 @@
+{
+  "description": "Reduced fixture from OneNote raw dump used to validate DOM-based list level inference.",
+  "parsedListItemsBeforeDomHints": [
+    {
+      "text": "Se debe tener en cuenta que el cambio no es retroactivo, y el mismo comenzará a registrar información de las nuevas Altas/Modificaciones que surjan a partir de la implementación del cambio. Las solicitudes ya abiertas que no hayan finalizado no registrará dicha información.",
+      "level": 0
+    },
+    {
+      "text": "The system will have a new feature toggle available to activate this functionality at Configuration level.",
+      "level": 0
+    },
+    {
+      "text": "This change will not impact previous sent invoices",
+      "level": 0
+    },
+    {
+      "text": "The system will show a new field \"Comments\" at header level in the \"Invoice details\" pane.",
+      "level": 0
+    },
+    {
+      "text": "The new Comments field will be optional.",
+      "level": 0
+    },
+    {
+      "text": "In case the Comments field is empty, the system will suggest a standard comment to be specified by the customer.",
+      "level": 0
+    },
+    {
+      "text": "When posting the document, the system will send this new value in the outgoing XML file.",
+      "level": 0
+    }
+  ],
+  "expectedAfterDomHints": [
+    {
+      "text": "Se debe tener en cuenta que el cambio no es retroactivo, y el mismo comenzará a registrar información de las nuevas Altas/Modificaciones que surjan a partir de la implementación del cambio. Las solicitudes ya abiertas que no hayan finalizado no registrará dicha información.",
+      "level": 0
+    },
+    {
+      "text": "The system will have a new feature toggle available to activate this functionality at Configuration level.",
+      "level": 0
+    },
+    {
+      "text": "This change will not impact previous sent invoices",
+      "level": 1
+    },
+    {
+      "text": "The system will show a new field \"Comments\" at header level in the \"Invoice details\" pane.",
+      "level": 0
+    },
+    {
+      "text": "The new Comments field will be optional.",
+      "level": 0
+    },
+    {
+      "text": "In case the Comments field is empty, the system will suggest a standard comment to be specified by the customer.",
+      "level": 0
+    },
+    {
+      "text": "When posting the document, the system will send this new value in the outgoing XML file.",
+      "level": 0
+    }
+  ],
+  "rawElements": [
+    {
+      "index": 445,
+      "tag": "li",
+      "className": "OutlineElement Ltr",
+      "text": "○Se debe tener en cuenta que el cambio no es retroactivo, y el mismo comenzará a registrar información de las nuevas Altas/Modificaciones que surjan a partir de la implementación del cambio. Las solicitudes ya abiertas que no hayan finalizado no registrará dicha información.",
+      "closestListText": "○Se debe tener en cuenta que el cambio no es retroactivo, y el mismo comenzará a registrar información de las nuevas Altas/Modificaciones que surjan a partir de la implementación del cambio. Las solicitudes ya abiertas que no hayan finalizado no registrará dicha información.",
+      "rectLeft": 546,
+      "marginLeft": "36px",
+      "computedLevelHint": 23,
+      "listStyleType": "circle",
+      "parentTag": "ul",
+      "depth": 24,
+      "htmlPreview": "<li aria-posinset=\"1\" role=\"listitem\" aria-level=\"3\" class=\"OutlineElement Ltr\" style=\"display: block; margin-left: 36px; font-size: 11pt; font-family: Calibri, sans-serif; vertical-align: baseline;\"><div class=\"ParaWrappingDiv\"><p class=\"Paragraph\" xml:lang=\"EN-US\" lang=\"EN-US\" style=\"font-weight: normal; font-style: normal; vertical-align: baseline; font-family: &quot;Segoe UI&quot;, Tahoma, Verdana, Sans-Serif; font-kerning: none; background-color: transparent; color: windowtext; text-align: left; font-size: 6pt; margin-bottom: 0px;\"><span class=\"ListMarkerWrappingSpan\"><span class=\"ListMarker\" aria-hidden=\"true\" data-contrast=\"auto\" style=\"text-indent: 0px; text-align: left; vertical-align: baseline; font-family: Calibri, sans-serif; font-weight: normal; font-style: normal; font-size: 11pt; margin-right: 13px; margin-left: -21px;\">○</span></span><span data-contrast=\"auto\" class=\"TextRun Highlight\" xml:lang=\"EN-US\" lang=\"EN-US\" style=\"color: windowtext; background-color: rgb(255, 255, 0); font-weight: normal; font-style: normal; text-decoration: none; font-size: 11pt; font-family: WordVisi_MSFontService, Calibri, sans-serif; line-height: 18px;\"><span class=\"NormalTextRun\" style=\"background-color: inherit;\">Se debe tener en cuenta que el cambio no es retroactivo, y el mismo comenzará a registrar información de las nuevas Altas/Modificaciones que surjan a partir de la implementación del cambio. Las solicitudes ya abiertas que no hayan finalizado no registrará dicha informaci…[truncated]"
+    },
+    {
+      "index": 451,
+      "tag": "span",
+      "className": "NormalTextRun",
+      "text": "Se debe tener en cuenta que el cambio no es retroactivo, y el mismo comenzará a registrar información de las nuevas Altas/Modificaciones que surjan a partir de la implementación del cambio. Las solicitudes ya abiertas que no hayan finalizado no registrará dicha información.",
+      "closestListText": "○Se debe tener en cuenta que el cambio no es retroactivo, y el mismo comenzará a registrar información de las nuevas Altas/Modificaciones que surjan a partir de la implementación del cambio. Las solicitudes ya abiertas que no hayan finalizado no registrará dicha información.",
+      "rectLeft": 546,
+      "marginLeft": "0px",
+      "computedLevelHint": 23,
+      "listStyleType": "circle",
+      "parentTag": "span",
+      "depth": 28,
+      "htmlPreview": "<span class=\"NormalTextRun\" style=\"background-color: inherit;\">Se debe tener en cuenta que el cambio no es retroactivo, y el mismo comenzará a registrar información de las nuevas Altas/Modificaciones que surjan a partir de la implementación del cambio. Las solicitudes ya abiertas que no hayan finalizado no registrará dicha información.</span>"
+    },
+    {
+      "index": 452,
+      "tag": "li",
+      "className": "OutlineElement Ltr",
+      "text": "○The system will have a new feature toggle available to activate this functionality at Configuration level. •This change will not impact previous sent invoices",
+      "closestListText": "○The system will have a new feature toggle available to activate this functionality at Configuration level. •This change will not impact previous sent invoices",
+      "rectLeft": 546,
+      "marginLeft": "36px",
+      "computedLevelHint": 23,
+      "listStyleType": "circle",
+      "parentTag": "ul",
+      "depth": 24,
+      "htmlPreview": "<li aria-posinset=\"2\" role=\"listitem\" aria-level=\"3\" class=\"OutlineElement Ltr\" style=\"display: block; margin-left: 36px; font-size: 11pt; font-family: Calibri, sans-serif; vertical-align: baseline;\"><div class=\"ParaWrappingDiv\"><p class=\"Paragraph\" xml:lang=\"ES-AR\" lang=\"ES-AR\" style=\"font-weight: normal; font-style: normal; vertical-align: baseline; font-family: &quot;Segoe UI&quot;, Tahoma, Verdana, Sans-Serif; font-kerning: none; background-color: transparent; color: windowtext; text-align: left; font-size: 6pt; margin-top: 0px; margin-bottom: 0px;\"><span class=\"ListMarkerWrappingSpan\"><span class=\"ListMarker\" aria-hidden=\"true\" data-contrast=\"auto\" style=\"text-indent: 0px; text-align: left; vertical-align: baseline; font-family: Calibri, sans-serif; font-weight: normal; font-style: normal; font-size: 11pt; margin-right: 13px; margin-left: -21px;\">○</span></span><span data-contrast=\"auto\" class=\"TextRun\" xml:lang=\"ES-AR\" lang=\"ES-AR\" style=\"color: windowtext; background-color: transparent; font-weight: normal; font-style: normal; text-decoration: none; font-size: 11pt; font-family: WordVisi_MSFontService, Calibri, sans-serif; line-height: 18px;\"><span class=\"NormalTextRun\" style=\"background-color: inherit;\">The system will have a new feature toggle available to activate this functionality at Configuration level.</span></span><span class=\"EOP\" style=\"font-size: 11pt; line-height: 18px; font-family: WordVisiPilcrow_MSFontService, Calibri, sans-serif; color: windowtext;\">&nb…[truncated]"
+    },
+    {
+      "index": 457,
+      "tag": "span",
+      "className": "TextRun",
+      "text": "The system will have a new feature toggle available to activate this functionality at Configuration level.",
+      "closestListText": "○The system will have a new feature toggle available to activate this functionality at Configuration level. •This change will not impact previous sent invoices",
+      "rectLeft": 546,
+      "marginLeft": "0px",
+      "computedLevelHint": 23,
+      "listStyleType": "circle",
+      "parentTag": "p",
+      "depth": 27,
+      "htmlPreview": "<span data-contrast=\"auto\" class=\"TextRun\" xml:lang=\"ES-AR\" lang=\"ES-AR\" style=\"color: windowtext; background-color: transparent; font-weight: normal; font-style: normal; text-decoration: none; font-size: 11pt; font-family: WordVisi_MSFontService, Calibri, sans-serif; line-height: 18px;\"><span class=\"NormalTextRun\" style=\"background-color: inherit;\">The system will have a new feature toggle available to activate this functionality at Configuration level.</span></span>"
+    },
+    {
+      "index": 458,
+      "tag": "span",
+      "className": "NormalTextRun",
+      "text": "The system will have a new feature toggle available to activate this functionality at Configuration level.",
+      "closestListText": "○The system will have a new feature toggle available to activate this functionality at Configuration level. •This change will not impact previous sent invoices",
+      "rectLeft": 546,
+      "marginLeft": "0px",
+      "computedLevelHint": 23,
+      "listStyleType": "circle",
+      "parentTag": "span",
+      "depth": 28,
+      "htmlPreview": "<span class=\"NormalTextRun\" style=\"background-color: inherit;\">The system will have a new feature toggle available to activate this functionality at Configuration level.</span>"
+    },
+    {
+      "index": 460,
+      "tag": "li",
+      "className": "OutlineElement Ltr",
+      "text": "•This change will not impact previous sent invoices",
+      "closestListText": "•This change will not impact previous sent invoices",
+      "rectLeft": 582,
+      "marginLeft": "36px",
+      "computedLevelHint": 24,
+      "listStyleType": "disc",
+      "parentTag": "ul",
+      "depth": 26,
+      "htmlPreview": "<li aria-posinset=\"1\" role=\"listitem\" aria-level=\"4\" class=\"OutlineElement Ltr\" style=\"display: block; margin-left: 36px; font-size: 11pt; font-family: Calibri, sans-serif; vertical-align: baseline;\"><div class=\"ParaWrappingDiv\"><p class=\"Paragraph\" xml:lang=\"ES-AR\" lang=\"ES-AR\" style=\"font-weight: normal; font-style: normal; vertical-align: baseline; font-family: &quot;Segoe UI&quot;, Tahoma, Verdana, Sans-Serif; font-kerning: none; background-color: transparent; color: windowtext; text-align: left; font-size: 6pt;\"><span class=\"ListMarkerWrappingSpan\"><span class=\"ListMarker\" aria-hidden=\"true\" data-contrast=\"auto\" style=\"text-indent: 0px; text-align: left; vertical-align: baseline; font-family: Calibri, sans-serif; font-weight: normal; font-style: normal; font-size: 11pt; margin-right: 13px; margin-left: -20px;\">•</span></span><span data-contrast=\"auto\" class=\"TextRun\" xml:lang=\"ES-AR\" lang=\"ES-AR\" style=\"color: windowtext; background-color: transparent; font-weight: normal; font-style: normal; text-decoration: none; font-size: 11pt; font-family: WordVisi_MSFontService, Calibri, sans-serif; line-height: 18px;\"><span class=\"NormalTextRun\" style=\"background-color: inherit;\">This change will not impact previous sent invoices</span></span><span class=\"EOP\" style=\"font-size: 11pt; line-height: 18px; font-family: WordVisiPilcrow_MSFontService, Calibri, sans-serif; color: windowtext;\">&nbsp;</span></p></div><span class=\"ListGhost\"></span></li>"
+    },
+    {
+      "index": 465,
+      "tag": "span",
+      "className": "TextRun",
+      "text": "This change will not impact previous sent invoices",
+      "closestListText": "•This change will not impact previous sent invoices",
+      "rectLeft": 582.31,
+      "marginLeft": "0px",
+      "computedLevelHint": 24,
+      "listStyleType": "disc",
+      "parentTag": "p",
+      "depth": 29,
+      "htmlPreview": "<span data-contrast=\"auto\" class=\"TextRun\" xml:lang=\"ES-AR\" lang=\"ES-AR\" style=\"color: windowtext; background-color: transparent; font-weight: normal; font-style: normal; text-decoration: none; font-size: 11pt; font-family: WordVisi_MSFontService, Calibri, sans-serif; line-height: 18px;\"><span class=\"NormalTextRun\" style=\"background-color: inherit;\">This change will not impact previous sent invoices</span></span>"
+    },
+    {
+      "index": 466,
+      "tag": "span",
+      "className": "NormalTextRun",
+      "text": "This change will not impact previous sent invoices",
+      "closestListText": "•This change will not impact previous sent invoices",
+      "rectLeft": 582.31,
+      "marginLeft": "0px",
+      "computedLevelHint": 24,
+      "listStyleType": "disc",
+      "parentTag": "span",
+      "depth": 30,
+      "htmlPreview": "<span class=\"NormalTextRun\" style=\"background-color: inherit;\">This change will not impact previous sent invoices</span>"
+    },
+    {
+      "index": 467,
+      "tag": "li",
+      "className": "OutlineElement Ltr",
+      "text": "○The system will show a new field \"Comments\" at header level in the \"Invoice details\" pane.",
+      "closestListText": "○The system will show a new field \"Comments\" at header level in the \"Invoice details\" pane.",
+      "rectLeft": 546,
+      "marginLeft": "36px",
+      "computedLevelHint": 23,
+      "listStyleType": "circle",
+      "parentTag": "ul",
+      "depth": 24,
+      "htmlPreview": "<li aria-posinset=\"3\" role=\"listitem\" aria-level=\"3\" class=\"OutlineElement Ltr\" style=\"display: block; margin-left: 36px; font-size: 11pt; font-family: Calibri, sans-serif; vertical-align: baseline;\"><div class=\"ParaWrappingDiv\"><p class=\"Paragraph\" xml:lang=\"ES-AR\" lang=\"ES-AR\" style=\"font-weight: normal; font-style: normal; vertical-align: baseline; font-family: &quot;Segoe UI&quot;, Tahoma, Verdana, Sans-Serif; font-kerning: none; background-color: transparent; color: windowtext; text-align: left; font-size: 6pt; margin-top: 0px; margin-bottom: 0px;\"><span class=\"ListMarkerWrappingSpan\"><span class=\"ListMarker\" aria-hidden=\"true\" data-contrast=\"auto\" style=\"text-indent: 0px; text-align: left; vertical-align: baseline; font-family: Calibri, sans-serif; font-weight: normal; font-style: normal; font-size: 11pt; margin-right: 13px; margin-left: -21px;\">○</span></span><span data-contrast=\"auto\" class=\"TextRun\" xml:lang=\"ES-AR\" lang=\"ES-AR\" style=\"color: windowtext; background-color: transparent; font-weight: normal; font-style: normal; text-decoration: none; font-size: 11pt; font-family: WordVisi_MSFontService, Calibri, sans-serif; line-height: 18px;\"><span class=\"NormalTextRun\" style=\"background-color: inherit;\">The system will show a new field \"Comments\" at header level in the \"Invoice details\" pane.</span></span><span class=\"EOP\" style=\"font-size: 11pt; line-height: 18px; font-family: WordVisiPilcrow_MSFontService, Calibri, sans-serif; color: windowtext;\">&nbsp;</span></p></…[truncated]"
+    },
+    {
+      "index": 472,
+      "tag": "span",
+      "className": "TextRun",
+      "text": "The system will show a new field \"Comments\" at header level in the \"Invoice details\" pane.",
+      "closestListText": "○The system will show a new field \"Comments\" at header level in the \"Invoice details\" pane.",
+      "rectLeft": 546.06,
+      "marginLeft": "0px",
+      "computedLevelHint": 23,
+      "listStyleType": "circle",
+      "parentTag": "p",
+      "depth": 27,
+      "htmlPreview": "<span data-contrast=\"auto\" class=\"TextRun\" xml:lang=\"ES-AR\" lang=\"ES-AR\" style=\"color: windowtext; background-color: transparent; font-weight: normal; font-style: normal; text-decoration: none; font-size: 11pt; font-family: WordVisi_MSFontService, Calibri, sans-serif; line-height: 18px;\"><span class=\"NormalTextRun\" style=\"background-color: inherit;\">The system will show a new field \"Comments\" at header level in the \"Invoice details\" pane.</span></span>"
+    },
+    {
+      "index": 473,
+      "tag": "span",
+      "className": "NormalTextRun",
+      "text": "The system will show a new field \"Comments\" at header level in the \"Invoice details\" pane.",
+      "closestListText": "○The system will show a new field \"Comments\" at header level in the \"Invoice details\" pane.",
+      "rectLeft": 546.06,
+      "marginLeft": "0px",
+      "computedLevelHint": 23,
+      "listStyleType": "circle",
+      "parentTag": "span",
+      "depth": 28,
+      "htmlPreview": "<span class=\"NormalTextRun\" style=\"background-color: inherit;\">The system will show a new field \"Comments\" at header level in the \"Invoice details\" pane.</span>"
+    },
+    {
+      "index": 474,
+      "tag": "li",
+      "className": "OutlineElement Ltr",
+      "text": "The new Comments field will be optional. ○",
+      "closestListText": "The new Comments field will be optional. ○",
+      "rectLeft": 546,
+      "marginLeft": "36px",
+      "computedLevelHint": 23,
+      "listStyleType": "circle",
+      "parentTag": "ul",
+      "depth": 24,
+      "htmlPreview": "<li aria-posinset=\"4\" role=\"listitem\" aria-level=\"3\" class=\"OutlineElement Ltr\" style=\"display: block; margin-left: 36px; font-size: 11pt; font-family: Calibri, sans-serif; vertical-align: baseline;\"><div id=\"WACViewPanel_EditingElement_WrappingDiv\" class=\"NoPointer\" style=\"height: 119.001px; width: 552px; display: block; position: absolute; z-index: 32767; visibility: hidden; max-height: none; opacity: 1; top: 0px; left: 0px;\"><div id=\"WACViewPanel_EditingElement\" contenteditable=\"false\" spellcheck=\"false\" class=\"Safari usehover WACEditing EditMode EditingSurfaceBody\" tabindex=\"0\" style=\"overflow: visible; visibility: visible; position: absolute; width: 100%; clip: rect(0px, 552px, 19.001px, 0px);\"><p class=\"Paragraph\" xml:lang=\"ES-AR\" lang=\"ES-AR\" style=\"font-weight: normal; font-style: normal; vertical-align: baseline; font-family: &quot;Segoe UI&quot;, Tahoma, Verdana, Sans-Serif; font-kerning: none; background-color: transparent; color: windowtext; text-align: left; font-size: 6pt; width: auto; height: auto; margin-top: 0px; text-indent: 0.0625px;\"><span data-contrast=\"auto\" class=\"TextRun\" xml:lang=\"ES-AR\" lang=\"ES-AR\" style=\"color: windowtext; background-color: transparent; font-weight: normal; font-style: normal; text-decoration: none; font-size: 11pt; font-family: WordVisi_MSFontService, Calibri, sans-serif; line-height: 18px;\"><span class=\"NormalTextRun\" style=\"background-color: inherit;\">The new Comments field will be optional.</span></span><span class=\"EOP\" style=…[truncated]"
+    },
+    {
+      "index": 477,
+      "tag": "span",
+      "className": "TextRun",
+      "text": "The new Comments field will be optional.",
+      "closestListText": "The new Comments field will be optional. ○",
+      "rectLeft": 546.06,
+      "marginLeft": "0px",
+      "computedLevelHint": 23,
+      "listStyleType": "circle",
+      "parentTag": "p",
+      "depth": 28,
+      "htmlPreview": "<span data-contrast=\"auto\" class=\"TextRun\" xml:lang=\"ES-AR\" lang=\"ES-AR\" style=\"color: windowtext; background-color: transparent; font-weight: normal; font-style: normal; text-decoration: none; font-size: 11pt; font-family: WordVisi_MSFontService, Calibri, sans-serif; line-height: 18px;\"><span class=\"NormalTextRun\" style=\"background-color: inherit;\">The new Comments field will be optional.</span></span>"
+    },
+    {
+      "index": 478,
+      "tag": "span",
+      "className": "NormalTextRun",
+      "text": "The new Comments field will be optional.",
+      "closestListText": "The new Comments field will be optional. ○",
+      "rectLeft": 546.06,
+      "marginLeft": "0px",
+      "computedLevelHint": 23,
+      "listStyleType": "circle",
+      "parentTag": "span",
+      "depth": 29,
+      "htmlPreview": "<span class=\"NormalTextRun\" style=\"background-color: inherit;\">The new Comments field will be optional.</span>"
+    },
+    {
+      "index": 480,
+      "tag": "li",
+      "className": "OutlineElement Ltr",
+      "text": "○In case the Comments field is empty, the system will suggest a standard comment to be specified by the customer.",
+      "closestListText": "○In case the Comments field is empty, the system will suggest a standard comment to be specified by the customer.",
+      "rectLeft": 546,
+      "marginLeft": "36px",
+      "computedLevelHint": 23,
+      "listStyleType": "circle",
+      "parentTag": "ul",
+      "depth": 24,
+      "htmlPreview": "<li aria-posinset=\"5\" role=\"listitem\" aria-level=\"3\" class=\"OutlineElement Ltr\" style=\"display: block; margin-left: 36px; font-size: 11pt; font-family: Calibri, sans-serif; vertical-align: baseline;\"><div class=\"ParaWrappingDiv\"><p class=\"Paragraph\" xml:lang=\"ES-AR\" lang=\"ES-AR\" style=\"font-weight: normal; font-style: normal; vertical-align: baseline; font-family: &quot;Segoe UI&quot;, Tahoma, Verdana, Sans-Serif; font-kerning: none; background-color: transparent; color: windowtext; text-align: left; font-size: 6pt; margin-top: 0px; margin-bottom: 0px;\"><span class=\"ListMarkerWrappingSpan\"><span class=\"ListMarker\" aria-hidden=\"true\" data-contrast=\"auto\" style=\"text-indent: 0px; text-align: left; vertical-align: baseline; font-family: Calibri, sans-serif; font-weight: normal; font-style: normal; font-size: 11pt; margin-right: 13px; margin-left: -21px;\">○</span></span><span data-contrast=\"auto\" class=\"TextRun\" xml:lang=\"ES-AR\" lang=\"ES-AR\" style=\"color: windowtext; background-color: transparent; font-weight: normal; font-style: normal; text-decoration: none; font-size: 11pt; font-family: WordVisi_MSFontService, Calibri, sans-serif; line-height: 18px;\"><span class=\"NormalTextRun\" style=\"background-color: inherit;\">In case the Comments field is empty, the system will suggest a standard comment to be specified by the customer.</span></span><span class=\"EOP\" style=\"font-size: 11pt; line-height: 18px; font-family: WordVisiPilcrow_MSFontService, Calibri, sans-serif; color: windowtext…[truncated]"
+    },
+    {
+      "index": 485,
+      "tag": "span",
+      "className": "TextRun",
+      "text": "In case the Comments field is empty, the system will suggest a standard comment to be specified by the customer.",
+      "closestListText": "○In case the Comments field is empty, the system will suggest a standard comment to be specified by the customer.",
+      "rectLeft": 546,
+      "marginLeft": "0px",
+      "computedLevelHint": 23,
+      "listStyleType": "circle",
+      "parentTag": "p",
+      "depth": 27,
+      "htmlPreview": "<span data-contrast=\"auto\" class=\"TextRun\" xml:lang=\"ES-AR\" lang=\"ES-AR\" style=\"color: windowtext; background-color: transparent; font-weight: normal; font-style: normal; text-decoration: none; font-size: 11pt; font-family: WordVisi_MSFontService, Calibri, sans-serif; line-height: 18px;\"><span class=\"NormalTextRun\" style=\"background-color: inherit;\">In case the Comments field is empty, the system will suggest a standard comment to be specified by the customer.</span></span>"
+    },
+    {
+      "index": 486,
+      "tag": "span",
+      "className": "NormalTextRun",
+      "text": "In case the Comments field is empty, the system will suggest a standard comment to be specified by the customer.",
+      "closestListText": "○In case the Comments field is empty, the system will suggest a standard comment to be specified by the customer.",
+      "rectLeft": 546,
+      "marginLeft": "0px",
+      "computedLevelHint": 23,
+      "listStyleType": "circle",
+      "parentTag": "span",
+      "depth": 28,
+      "htmlPreview": "<span class=\"NormalTextRun\" style=\"background-color: inherit;\">In case the Comments field is empty, the system will suggest a standard comment to be specified by the customer.</span>"
+    },
+    {
+      "index": 487,
+      "tag": "li",
+      "className": "OutlineElement Ltr",
+      "text": "○When posting the document, the system will send this new value in the outgoing XML file.",
+      "closestListText": "○When posting the document, the system will send this new value in the outgoing XML file.",
+      "rectLeft": 546,
+      "marginLeft": "36px",
+      "computedLevelHint": 23,
+      "listStyleType": "circle",
+      "parentTag": "ul",
+      "depth": 24,
+      "htmlPreview": "<li aria-posinset=\"6\" role=\"listitem\" aria-level=\"3\" class=\"OutlineElement Ltr\" style=\"display: block; margin-left: 36px; font-size: 11pt; font-family: Calibri, sans-serif; vertical-align: baseline;\"><div class=\"ParaWrappingDiv\"><p class=\"Paragraph\" xml:lang=\"ES-AR\" lang=\"ES-AR\" style=\"font-weight: normal; font-style: normal; vertical-align: baseline; font-family: &quot;Segoe UI&quot;, Tahoma, Verdana, Sans-Serif; font-kerning: none; background-color: transparent; color: windowtext; text-align: left; font-size: 6pt; margin-top: 0px;\"><span class=\"ListMarkerWrappingSpan\"><span class=\"ListMarker\" aria-hidden=\"true\" data-contrast=\"auto\" style=\"text-indent: 0px; text-align: left; vertical-align: baseline; font-family: Calibri, sans-serif; font-weight: normal; font-style: normal; font-size: 11pt; margin-right: 13px; margin-left: -21px;\">○</span></span><span data-contrast=\"auto\" class=\"TextRun\" xml:lang=\"ES-AR\" lang=\"ES-AR\" style=\"color: windowtext; background-color: transparent; font-weight: normal; font-style: normal; text-decoration: none; font-size: 11pt; font-family: WordVisi_MSFontService, Calibri, sans-serif; line-height: 18px;\"><span class=\"NormalTextRun\" style=\"background-color: inherit;\">When posting the document, the system will send this new value in the outgoing XML file.</span></span><span class=\"LineBreakBlob BlobObject DragDrop\" style=\"font-size: 11pt; line-height: 18px; font-family: WordVisiCarriageReturn_MSFontService, WordVisi_MSFontService, Calibri, sans-serif; …[truncated]"
+    },
+    {
+      "index": 492,
+      "tag": "span",
+      "className": "TextRun",
+      "text": "When posting the document, the system will send this new value in the outgoing XML file.",
+      "closestListText": "○When posting the document, the system will send this new value in the outgoing XML file.",
+      "rectLeft": 546.06,
+      "marginLeft": "0px",
+      "computedLevelHint": 23,
+      "listStyleType": "circle",
+      "parentTag": "p",
+      "depth": 27,
+      "htmlPreview": "<span data-contrast=\"auto\" class=\"TextRun\" xml:lang=\"ES-AR\" lang=\"ES-AR\" style=\"color: windowtext; background-color: transparent; font-weight: normal; font-style: normal; text-decoration: none; font-size: 11pt; font-family: WordVisi_MSFontService, Calibri, sans-serif; line-height: 18px;\"><span class=\"NormalTextRun\" style=\"background-color: inherit;\">When posting the document, the system will send this new value in the outgoing XML file.</span></span>"
+    },
+    {
+      "index": 493,
+      "tag": "span",
+      "className": "NormalTextRun",
+      "text": "When posting the document, the system will send this new value in the outgoing XML file.",
+      "closestListText": "○When posting the document, the system will send this new value in the outgoing XML file.",
+      "rectLeft": 546.06,
+      "marginLeft": "0px",
+      "computedLevelHint": 23,
+      "listStyleType": "circle",
+      "parentTag": "span",
+      "depth": 28,
+      "htmlPreview": "<span class=\"NormalTextRun\" style=\"background-color: inherit;\">When posting the document, the system will send this new value in the outgoing XML file.</span>"
+    }
+  ]
+}
