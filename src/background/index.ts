@@ -3,6 +3,7 @@ import { getConfig } from "../utils/config";
 import { getActiveTab, sendMessageToTab } from "../utils/helpers/chrome";
 import { getErrorMessage } from "../utils/helpers/error";
 import { extractOneNoteTextFromTab } from "../utils/helpers/onenoteExtraction";
+import { buildEstimationBreakdownTemplateData } from "../utils/helpers/estimationBreakdown";
 import { buildSignatureTemplateData } from "../utils/helpers/signature";
 import { buildTicketUrlTemplateData } from "../utils/helpers/ticketUrl";
 import {
@@ -77,7 +78,8 @@ const generateGmailDraft = async (
   const fieldLogs = buildFoundFieldLogs(data, template.fieldMappings);
   const computedTemplateData = {
     ...data,
-    ...buildTicketUrlTemplateData(config, data)
+    ...buildTicketUrlTemplateData(config, data),
+    ...buildEstimationBreakdownTemplateData(template.id)
   };
   const dataForTemplate = applyEmptyFieldFallback(
     computedTemplateData,

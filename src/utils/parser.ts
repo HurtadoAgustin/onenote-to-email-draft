@@ -11,6 +11,7 @@ type ParsedLine = {
   text: string;
   normalized: string;
   level: number;
+  isDivider?: boolean;
 };
 
 type MatchedDomHint = {
@@ -19,7 +20,12 @@ type MatchedDomHint = {
 };
 
 const LIST_LEVEL_TOLERANCE_PX = 18;
-const listKeys = new Set(["cambios", "integracion"]);
+const listKeys = new Set([
+  "cambios",
+  "integracion",
+  "technicalConditions",
+  "additionalContext"
+]);
 
 const normalizeForMatch = (value: string): string =>
   value
@@ -78,6 +84,9 @@ const getLineDepth = (value: string): number => {
   return 0;
 };
 
+const isDividerRawLine = (value: string): boolean =>
+  /^\s*[-_—–]{5,}\s*$/.test(value);
+
 const stripLeadingBullet = (value: string): string =>
   value
     .replace(/^\s*[•·▪▫◦○●■□‣⁃-]+\s*/, "")
@@ -89,6 +98,16 @@ const cleanText = (value: string): string =>
     .trim();
 
 const parseLine = (rawLine: string): ParsedLine | null => {
+  if (isDividerRawLine(rawLine)) {
+    return {
+      raw: rawLine,
+      text: "-----",
+      normalized: "section divider",
+      level: 0,
+      isDivider: true
+    };
+  }
+
   const text = cleanText(rawLine);
 
   if (!text) return null;
@@ -133,6 +152,48 @@ const headingGroups = {
     "erp integration conditons",
     "condiciones de integracion con el erp",
     "condiciones de integración con el erp"
+  ],
+  updateConsiderations: [
+    "update considerations",
+    "consideraciones de actualizacion",
+    "consideraciones de actualización"
+  ],
+  designNotes: [
+    "design notes",
+    "notas de diseño"
+  ],
+  internalContext: [
+    "internal context",
+    "internal context not to be shared with customer",
+    "contexto interno"
+  ],
+  estimationBreakdown: [
+    "estimation breakdown",
+    "desglose de estimacion",
+    "desglose de estimación"
+  ],
+  responsibleOfEstimation: [
+    "responsible of estimation",
+    "responsable de estimacion",
+    "responsable de estimación"
+  ],
+  acceptanceOfConditions: [
+    "acceptance of conditions of satisfaction",
+    "aceptacion de condiciones de satisfaccion",
+    "aceptación de condiciones de satisfacción"
+  ],
+  responsibleOfDevelopment: [
+    "responsible of development",
+    "responsable de desarrollo"
+  ],
+  technicalConditions: [
+    "technical conditions",
+    "condiciones tecnicas",
+    "condiciones técnicas"
+  ],
+  additionalContext: [
+    "additional context",
+    "contexto adicional"
   ],
   keyCommunicationPoints: [
     "key communication points",
@@ -284,7 +345,7 @@ const findHeadingIndex = (
   lines.findIndex((line, index) => index >= startIndex && isHeading(line, labels));
 
 const isStopLine = (line: ParsedLine, endLabels: string[][]): boolean =>
-  endLabels.some(labels => isHeading(line, labels));
+  Boolean(line.isDivider) || endLabels.some(labels => isHeading(line, labels));
 
 const getSectionLines = (
   lines: ParsedLine[],
@@ -316,6 +377,12 @@ const removeEmptyVisualItems = (lines: ParsedLine[]): ParsedLine[] =>
 
 const sanitizeErpIntegrationLines = (lines: ParsedLine[]): ParsedLine[] => {
   const strictStopLabels = [
+    headingGroups.updateConsiderations,
+    headingGroups.designNotes,
+    headingGroups.internalContext,
+    headingGroups.estimationBreakdown,
+    headingGroups.technicalConditions,
+    headingGroups.additionalContext,
     headingGroups.keyCommunicationPoints,
     headingGroups.originalRequest,
     headingGroups.originalRequestTableFields,
@@ -357,6 +424,10 @@ const parseChangeOrderDocumentation = (text: string): TemplateData => {
   const lines = removeExampleBlocks(getLines(text));
 
   const sectionAfterConditionsStops = [
+    headingGroups.updateConsiderations,
+    headingGroups.designNotes,
+    headingGroups.internalContext,
+    headingGroups.estimationBreakdown,
     headingGroups.keyCommunicationPoints,
     headingGroups.originalRequest,
     headingGroups.originalRequestTableFields,
@@ -404,13 +475,51 @@ const parseChangeOrderDocumentation = (text: string): TemplateData => {
     )
   );
 
+  const designNotesSectionStops = [
+    headingGroups.estimationBreakdown,
+    headingGroups.responsibleOfEstimation,
+    headingGroups.acceptanceOfConditions,
+    headingGroups.responsibleOfDevelopment,
+    headingGroups.keyCommunicationPoints,
+    headingGroups.originalRequest,
+    headingGroups.originalRequestTableFields,
+    headingGroups.acceptanceMarkers,
+    headingGroups.title,
+    headingGroups.description,
+    headingGroups.changeOrderReason,
+    headingGroups.conditionsOfSatisfaction
+  ];
+
+  const designNotesLines = getSectionLines(
+    lines,
+    headingGroups.designNotes,
+    designNotesSectionStops
+  );
+
+  const technicalConditionLines = getSectionLines(
+    designNotesLines,
+    headingGroups.technicalConditions,
+    [
+      headingGroups.additionalContext,
+      ...designNotesSectionStops
+    ]
+  );
+
+  const additionalContextLines = getSectionLines(
+    designNotesLines,
+    headingGroups.additionalContext,
+    designNotesSectionStops
+  );
+
   return {
     ...parseTicketMetadata(text, lines),
     titulo: joinAsParagraph(titleLines),
     descripcion: joinAsParagraph(descriptionLines),
     motivo: joinAsParagraph(reasonLines),
     cambios: normalizeListLevels(behaviorChangeLines),
-    integracion: normalizeListLevels(erpIntegrationLines)
+    integracion: normalizeListLevels(erpIntegrationLines),
+    technicalConditions: normalizeListLevels(technicalConditionLines),
+    additionalContext: normalizeListLevels(additionalContextLines)
   };
 };
 

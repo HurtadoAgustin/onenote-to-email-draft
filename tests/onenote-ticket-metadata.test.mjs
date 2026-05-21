@@ -17,6 +17,7 @@ await build({
       export { parseStructuredText } from "./src/utils/parser.ts";
       export { renderTemplate } from "./src/utils/template.ts";
       export { buildTicketUrlTemplateData } from "./src/utils/helpers/ticketUrl.ts";
+      export { buildEstimationBreakdownTemplateData } from "./src/utils/helpers/estimationBreakdown.ts";
       export { estimationTemplate } from "./src/templates/estimation.ts";
     `,
     resolveDir: process.cwd(),
@@ -29,6 +30,7 @@ await build({
 });
 
 const {
+  buildEstimationBreakdownTemplateData,
   buildTicketUrlTemplateData,
   defaultConfig,
   estimationTemplate,
@@ -44,7 +46,8 @@ const baseTemplateData = {
 };
 const templateData = {
   ...baseTemplateData,
-  ...buildTicketUrlTemplateData(defaultConfig, baseTemplateData)
+  ...buildTicketUrlTemplateData(defaultConfig, baseTemplateData),
+  ...buildEstimationBreakdownTemplateData(estimationTemplate.id)
 };
 const subject = renderTemplate(estimationTemplate.subjectTemplate, templateData);
 const html = renderTemplate(estimationTemplate.bodyTemplate, templateData);
@@ -54,6 +57,16 @@ assert.equal(parsedData.ticketNumber, "T-12345");
 assert.equal(parsedData.clientAndModule, "ACME AP");
 assert.equal(parsedData.clientChoRequester, "Jane Doe");
 assert.equal(parsedData.titulo, "New payment approval workflow");
+assert.deepEqual(parsedData.integracion, [
+  {
+    text: "The ERP should receive the approval status.",
+    level: 0
+  }
+]);
+assert.doesNotMatch(
+  JSON.stringify(parsedData.integracion),
+  /Update Considerations|Design notes|Technical Conditions|internal implementation|Estimation breakdown/
+);
 assert.equal(subject, "[Esker-ACME AP][Estimación] T-12345 - New payment approval workflow");
 assert.equal(
   templateData.ticketUrl,
@@ -64,11 +77,39 @@ assert.match(
   /correspondiente al ticket <a href="https:\/\/request-sa2\.odoo\.com\/web#id=12345&amp;menu_id=87&amp;cids=1&amp;action=140&amp;model=project\.task&amp;view_type=form"[^>]*>T-12345<\/a>/
 );
 assert.match(html, /La misma deberá ser enviada a Jane Doe\./);
+assert.deepEqual(parsedData.technicalConditions, [
+  {
+    text: "Use a feature toggle for the approval workflow.",
+    level: 0
+  },
+  {
+    text: "This internal subcondition should stay nested.",
+    level: 1
+  }
+]);
+assert.deepEqual(parsedData.additionalContext, [
+  {
+    text: "Coordinate the deployment window with ACME.",
+    level: 0
+  }
+]);
+assert.match(html, /Internal context \(not to be shared with customer\)/);
+assert.match(html, /Technical Conditions/);
+assert.match(html, /Additional context/);
+assert.match(html, /Estimation breakdown/);
+assert.match(html, /<table[\s\S]*Task[\s\S]*Hours[\s\S]*Total[\s\S]*<\/table>/);
+assert.doesNotMatch(html, /data:image\/png;base64/);
+assert.ok(
+  html.indexOf("Condiciones de Integración con el ERP") < html.indexOf("Internal context (not to be shared with customer)"),
+  "The internal context section should be rendered after ERP integration conditions."
+);
 
 const result = {
   parsedData,
   subject,
-  ticketUrl: templateData.ticketUrl
+  ticketUrl: templateData.ticketUrl,
+  technicalConditions: parsedData.technicalConditions,
+  additionalContext: parsedData.additionalContext
 };
 
 fs.mkdirSync(path.dirname(outputPath), { recursive: true });

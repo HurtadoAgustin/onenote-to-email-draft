@@ -53,6 +53,23 @@ export const changeOrderContentFieldMappings: FieldMapping[] = [
       "Condiciones de Integracion con el ERP"
     ],
     required: false
+  },
+  {
+    key: "technicalConditions",
+    labels: [
+      "Technical Conditions",
+      "Condiciones Técnicas",
+      "Condiciones Tecnicas"
+    ],
+    required: false
+  },
+  {
+    key: "additionalContext",
+    labels: [
+      "Additional context",
+      "Contexto adicional"
+    ],
+    required: false
   }
 ];
 

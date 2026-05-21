@@ -8,8 +8,19 @@ export const escapeHtml = (value: string): string =>
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 
-const htmlKeys = new Set(["signature", "signatureSeparator", "firma", "firmaSeparador"]);
-const listItemKeys = new Set(["cambios", "integracion"]);
+const htmlKeys = new Set([
+  "signature",
+  "signatureSeparator",
+  "firma",
+  "firmaSeparador",
+  "estimationBreakdownTable"
+]);
+const listItemKeys = new Set([
+  "cambios",
+  "integracion",
+  "technicalConditions",
+  "additionalContext"
+]);
 
 type ListNode = {
   text: string;

@@ -51,3 +51,29 @@ Behavior changes
 ERP Integration Conditions
 
 ○The ERP should receive the approval status.
+
+Update Considerations
+
+This change is updateable and should not be included in ERP Integration Conditions.
+
+--------------------------------------------------------------------------------
+
+Internal context (not to be shared with customer)
+
+Design notes
+
+Technical Conditions
+
+○Use a feature toggle for the approval workflow.
+▪This internal subcondition should stay nested.
+
+Additional context
+
+○Coordinate the deployment window with ACME.
+
+Estimation breakdown
+
+Task
+Hours
+Solution design & estimation
+Total

@@ -18,8 +18,40 @@
         "text": "The ERP should receive the approval status.",
         "level": 0
       }
+    ],
+    "technicalConditions": [
+      {
+        "text": "Use a feature toggle for the approval workflow.",
+        "level": 0
+      },
+      {
+        "text": "This internal subcondition should stay nested.",
+        "level": 1
+      }
+    ],
+    "additionalContext": [
+      {
+        "text": "Coordinate the deployment window with ACME.",
+        "level": 0
+      }
     ]
   },
   "subject": "[Esker-ACME AP][Estimación] T-12345 - New payment approval workflow",
-  "ticketUrl": "https://request-sa2.odoo.com/web#id=12345&menu_id=87&cids=1&action=140&model=project.task&view_type=form"
+  "ticketUrl": "https://request-sa2.odoo.com/web#id=12345&menu_id=87&cids=1&action=140&model=project.task&view_type=form",
+  "technicalConditions": [
+    {
+      "text": "Use a feature toggle for the approval workflow.",
+      "level": 0
+    },
+    {
+      "text": "This internal subcondition should stay nested.",
+      "level": 1
+    }
+  ],
+  "additionalContext": [
+    {
+      "text": "Coordinate the deployment window with ACME.",
+      "level": 0
+    }
+  ]
 }
