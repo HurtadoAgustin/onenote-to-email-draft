@@ -9,7 +9,7 @@ const extractTextFromOneNote = (
   if (!root) {
     return {
       ok: false,
-      logs: ["❌ No se encontró el contenedor de OneNote"]
+      logs: ["❌ OneNote container not found"]
     };
   }
 
@@ -18,14 +18,14 @@ const extractTextFromOneNote = (
   if (!text) {
     return {
       ok: false,
-      logs: ["❌ OneNote no devolvió texto visible"]
+      logs: ["❌ OneNote did not return visible text"]
     };
   }
 
   return {
     ok: true,
     text,
-    logs: ["✅ Página OneNote leída"]
+    logs: ["✅ OneNote page read"]
   };
 };
 

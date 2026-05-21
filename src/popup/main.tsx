@@ -1,27 +1,32 @@
 import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
+import { emailTemplates } from "../templateRegistry";
+import type { EmailTemplateId } from "../templateRegistry/types";
 import type { GenerateDraftResponse } from "../utils/types";
 import "./styles.css";
 
 const App = () => {
-  const [logs, setLogs] = useState<string[]>([
-    "Abrí una página de OneNote Web y presioná Generar mail."
-  ]);
+  const [logs, setLogs] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [showTemplateOptions, setShowTemplateOptions] = useState(false);
 
-  const generateMail = async () => {
+  const generateMail = async (templateId: EmailTemplateId) => {
+    const template = emailTemplates.find(item => item.id === templateId);
+
     setIsLoading(true);
-    setLogs(["Generando draft..."]);
+    setShowTemplateOptions(false);
+    setLogs([`Generating draft: ${template?.label ?? templateId}...`]);
 
     try {
       const response = (await chrome.runtime.sendMessage({
-        type: "GENERATE_GMAIL_DRAFT"
+        type: "GENERATE_GMAIL_DRAFT",
+        templateId
       })) as GenerateDraftResponse;
 
-      setLogs(response?.logs?.length ? response.logs : ["❌ No hubo respuesta de la extensión"]);
+      setLogs(response?.logs?.length ? response.logs : ["❌ No response from the extension"]);
     } catch (error) {
       setLogs([
-        "❌ Error al comunicarse con la extensión",
+        "❌ Error while communicating with the extension",
         error instanceof Error ? error.message : String(error)
       ]);
     } finally {
@@ -37,25 +42,59 @@ const App = () => {
     <main className="container">
       <header className="header">
         <h1>OneNote to Mail Draft</h1>
-        <p>Genera un draft de Gmail desde OneNote.</p>
+        <p>Generate a Gmail draft from OneNote.</p>
       </header>
 
       <section className="actions">
-        <button className="primaryButton" disabled={isLoading} onClick={generateMail}>
-          {isLoading ? "Generando..." : "Generar mail"}
+        <button
+          className="primaryButton"
+          disabled={isLoading}
+          onClick={() => {
+            setLogs([]);
+            setShowTemplateOptions(currentValue => !currentValue);
+          }}
+        >
+          {isLoading ? "Generating..." : "Send email"}
         </button>
-        <button className="secondaryButton" disabled={isLoading} onClick={openOptions}>
-          Settings
+        <button
+          aria-label="Open settings"
+          className="settingsButton"
+          disabled={isLoading}
+          onClick={openOptions}
+          title="Settings"
+        >
+          ⚙
         </button>
       </section>
 
-      <section className="logs">
-        {logs.map((log, index) => (
-          <div className="logItem" key={`${log}-${index}`}>
-            {log}
+      {showTemplateOptions && (
+        <section className="templateOptions">
+          <h2>Which email topic do you want to send?</h2>
+          <div className="templateGrid">
+            {emailTemplates.map(template => (
+              <button
+                className="templateButton"
+                disabled={isLoading}
+                key={template.id}
+                onClick={() => void generateMail(template.id)}
+              >
+                <strong>{template.label}</strong>
+                <span>{template.description}</span>
+              </button>
+            ))}
           </div>
-        ))}
-      </section>
+        </section>
+      )}
+
+      {logs.length > 0 && (
+        <section className="logs">
+          {logs.map((log, index) => (
+            <div className="logItem" key={`${log}-${index}`}>
+              {log}
+            </div>
+          ))}
+        </section>
+      )}
     </main>
   );
 };

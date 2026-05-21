@@ -6,7 +6,7 @@ Chrome/Edge extension to extract structured data from OneNote Web and generate a
 
 1. Open a OneNote Web page with structured text.
 2. Click the extension popup.
-3. Click **Generar mail**.
+3. Click **Send email**.
 4. The extension reads the current OneNote tab.
 5. It parses mapped fields.
 6. It opens Gmail compose.
@@ -28,10 +28,10 @@ Load the `dist` folder as an unpacked extension from:
 ## Example OneNote content
 
 ```txt
-Cliente: ACME
+Client: ACME
 Ticket: INC-2031
-Problema: Error de autenticación
-Resolución: Reinicio de servicio
+Issue: Authentication error
+Resolution: Service restart
 ```
 
 ## Privacy

@@ -26,14 +26,14 @@ const insertGmailDraft = async (
   if (!subjectElement) {
     return {
       ok: false,
-      logs: ["❌ No se encontró el campo de asunto en Gmail"]
+      logs: ["❌ Gmail subject field not found"]
     };
   }
 
   if (!bodyElement) {
     return {
       ok: false,
-      logs: ["❌ No se encontró el body del compose en Gmail"]
+      logs: ["❌ Gmail compose body not found"]
     };
   }
 
@@ -43,7 +43,7 @@ const insertGmailDraft = async (
 
   return {
     ok: true,
-    logs: ["✅ Draft generado en Gmail para revisión manual"]
+    logs: ["✅ Gmail draft created for manual review"]
   };
 };
 
@@ -56,7 +56,7 @@ chrome.runtime.onMessage.addListener((message: RuntimeMessage, _sender, sendResp
       sendResponse({
         ok: false,
         logs: [
-          "❌ Error al insertar el draft en Gmail",
+          "❌ Error while inserting the Gmail draft",
           error instanceof Error ? error.message : String(error)
         ]
       });

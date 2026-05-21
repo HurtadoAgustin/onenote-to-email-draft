@@ -1,8 +1,16 @@
+export type EmailTemplateId = "estimation" | "scope" | "completedQa";
+
 export type FieldMapping = {
   key: string;
   labels: string[];
   required?: boolean;
 };
+
+export type EmailTemplateOverride = Partial<{
+  subjectTemplate: string;
+  bodyTemplate: string;
+  fieldMappings: FieldMapping[];
+}>;
 
 export type ParsedListItem = {
   text: string;
@@ -42,13 +50,18 @@ export type ExtensionFlags = {
 
 export type ExtensionConfig = {
   mailUrl: string;
-  subjectTemplate: string;
-  bodyTemplate: string;
   signatureHtml: string;
   emptyFieldFallback: string;
-  fieldMappings: FieldMapping[];
+  ticketUrlTemplate: string;
+  templateOverrides: Partial<Record<EmailTemplateId, EmailTemplateOverride>>;
   selectors: ExtensionSelectors;
   flags: ExtensionFlags;
+};
+
+export type LegacyExtensionConfig = Partial<ExtensionConfig> & {
+  subjectTemplate?: string;
+  bodyTemplate?: string;
+  fieldMappings?: FieldMapping[];
 };
 
 export type GenerateDraftResponse = {
@@ -70,6 +83,7 @@ export type InsertGmailDraftResponse = {
 
 export type GenerateDraftPayload = {
   type: "GENERATE_GMAIL_DRAFT";
+  templateId: EmailTemplateId;
 };
 
 export type ExtractOneNotePayload = {

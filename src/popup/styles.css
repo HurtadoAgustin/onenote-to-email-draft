@@ -7,11 +7,12 @@ body {
   font-family: Arial, sans-serif;
   background: #f8fafc;
   color: #111827;
+  min-width: 360px;
 }
 
 .container {
-  width: 360px;
   padding: 16px;
+  width: 360px;
 }
 
 .header h1 {
@@ -20,13 +21,12 @@ body {
 }
 
 .header p {
-  margin: 6px 0 0;
   color: #4b5563;
-  font-size: 13px;
+  margin: 6px 0 0;
 }
 
 .actions {
-  display: grid;
+  display: flex;
   gap: 8px;
   margin-top: 16px;
 }
@@ -42,12 +42,13 @@ button {
 
 button:disabled {
   cursor: not-allowed;
-  opacity: 0.7;
+  opacity: 0.65;
 }
 
 .primaryButton {
   background: #2563eb;
   color: #ffffff;
+  flex: 1;
 }
 
 .secondaryButton {
@@ -55,18 +56,85 @@ button:disabled {
   color: #111827;
 }
 
+.templateOptions {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  margin-top: 14px;
+  padding: 12px;
+}
+
+.templateOptions h2 {
+  font-size: 14px;
+  margin: 0 0 10px;
+}
+
+.templateGrid {
+  display: grid;
+  gap: 8px;
+}
+
+.templateButton {
+  background: #f9fafb;
+  border: 1px solid #d1d5db;
+  color: #111827;
+  display: grid;
+  gap: 4px;
+  padding: 10px;
+  text-align: left;
+}
+
+.templateButton:hover {
+  background: #eff6ff;
+  border-color: #93c5fd;
+}
+
+.templateButton span {
+  color: #4b5563;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+}
+
 .logs {
   background: #ffffff;
   border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  border-radius: 12px;
   display: grid;
-  gap: 6px;
-  margin-top: 16px;
-  padding: 10px;
+  gap: 8px;
+  margin-top: 14px;
+  max-height: 260px;
+  overflow: auto;
+  padding: 12px;
 }
 
 .logItem {
+  border-bottom: 1px solid #f3f4f6;
+  color: #111827;
   font-size: 13px;
-  line-height: 1.4;
-  word-break: break-word;
+  line-height: 18px;
+  padding-bottom: 6px;
+}
+
+.logItem:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.settingsButton {
+  align-items: center;
+  background: #e5e7eb;
+  color: #111827;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 18px;
+  height: 40px;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+  width: 40px;
+}
+
+.settingsButton:hover {
+  background: #d1d5db;
 }

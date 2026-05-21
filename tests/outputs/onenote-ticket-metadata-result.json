@@ -1,0 +1,25 @@
+{
+  "parsedData": {
+    "choNumber": "CHO-012",
+    "ticketNumber": "T-12345",
+    "clientChoRequester": "Jane Doe",
+    "clientAndModule": "ACME AP",
+    "titulo": "New payment approval workflow",
+    "descripcion": "As an AP user I want a configurable approval workflow.",
+    "motivo": "Given the client's need for a configurable approval workflow, additional development is required.",
+    "cambios": [
+      {
+        "text": "The system will show a new approval workflow setting.",
+        "level": 0
+      }
+    ],
+    "integracion": [
+      {
+        "text": "The ERP should receive the approval status.",
+        "level": 0
+      }
+    ]
+  },
+  "subject": "[Esker-ACME AP][Estimación] T-12345 - New payment approval workflow",
+  "ticketUrl": "https://request-sa2.odoo.com/web#id=12345&menu_id=87&cids=1&action=140&model=project.task&view_type=form"
+}

@@ -209,6 +209,73 @@ const removeExampleBlocks = (lines: ParsedLine[]): ParsedLine[] => {
   return result;
 };
 
+const escapeRegExp = (value: string): string =>
+  value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const normalizeTicketToken = (value: string): string =>
+  value.replace(/\s+/g, "").toUpperCase();
+
+const parseTicketHeaderMetadata = (text: string): TemplateData => {
+  const choNumberMatch = text.match(/\bCHO\s*-\s*\d{2,3}\b/i);
+  const ticketNumberMatch = text.match(/\bT\s*-\s*\d+\b/i);
+
+  return {
+    choNumber: choNumberMatch ? normalizeTicketToken(choNumberMatch[0]) : "",
+    ticketNumber: ticketNumberMatch ? normalizeTicketToken(ticketNumberMatch[0]) : ""
+  };
+};
+
+const getInlineValueAfterLabel = (line: ParsedLine, labels: string[]): string => {
+  const matchedLabel = labels.find(label =>
+    line.normalized.startsWith(normalizeForMatch(label))
+  );
+
+  if (!matchedLabel) return "";
+
+  return line.text
+    .replace(new RegExp(`^${escapeRegExp(matchedLabel)}\\s*[:：-]?\\s*`, "i"), "")
+    .trim();
+};
+
+const getOriginalRequestFieldValue = (
+  lines: ParsedLine[],
+  labels: string[]
+): string => {
+  const startIndex = findHeadingIndex(lines, labels);
+
+  if (startIndex < 0) return "";
+
+  const inlineValue = getInlineValueAfterLabel(lines[startIndex], labels);
+  const isExactLabelLine = labels.some(
+    label => lines[startIndex].normalized === normalizeForMatch(label)
+  );
+
+  if (inlineValue && !isExactLabelLine) return inlineValue;
+
+  for (let index = startIndex + 1; index < lines.length; index += 1) {
+    const candidate = lines[index];
+
+    if (isHeading(candidate, headingGroups.originalRequestTableFields)) return "";
+    if (isAnyKnownHeading(candidate)) return "";
+    if (candidate.text) return candidate.text;
+  }
+
+  return "";
+};
+
+const parseOriginalRequestMetadata = (lines: ParsedLine[]): TemplateData => ({
+  clientChoRequester: getOriginalRequestFieldValue(lines, ["Full name"]),
+  clientAndModule: getOriginalRequestFieldValue(lines, [
+    "Client & module",
+    "Client and module"
+  ])
+});
+
+const parseTicketMetadata = (text: string, lines: ParsedLine[]): TemplateData => ({
+  ...parseTicketHeaderMetadata(text),
+  ...parseOriginalRequestMetadata(lines)
+});
+
 const findHeadingIndex = (
   lines: ParsedLine[],
   labels: string[],
@@ -338,6 +405,7 @@ const parseChangeOrderDocumentation = (text: string): TemplateData => {
   );
 
   return {
+    ...parseTicketMetadata(text, lines),
     titulo: joinAsParagraph(titleLines),
     descripcion: joinAsParagraph(descriptionLines),
     motivo: joinAsParagraph(reasonLines),
@@ -345,9 +413,6 @@ const parseChangeOrderDocumentation = (text: string): TemplateData => {
     integracion: normalizeListLevels(erpIntegrationLines)
   };
 };
-
-const escapeRegExp = (value: string): string =>
-  value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 const parseLabelValueText = (
   text: string,
@@ -559,7 +624,10 @@ export const parseStructuredText = (
     return documentationData;
   }
 
-  return parseLabelValueText(text, mappings);
+  return {
+    ...parseTicketMetadata(text, getLines(text)),
+    ...parseLabelValueText(text, mappings)
+  };
 };
 
 export const getMissingRequiredFields = (

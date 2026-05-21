@@ -1,0 +1,53 @@
+CHO-012 T-12345 | New payment approval workflow
+
+Definition of 'Done'
+
+Changes reflected in repository along with a Pull-Request
+Changes are ready in EOD DEV
+Developer tests completed successfully
+Documentation is completed
+Draft "Completed in QA" email sent internally and attached
+Creation of Non-DEV ticket (if needed)
+Odoo/Trello card update
+
+Key communication points
+
+Acceptance of functionality attached
+
+Original Request
+
+Full name
+
+Jane Doe
+
+Role
+
+Original email/file with request
+
+Client & module
+
+ACME AP
+
+Original HelpDesk Ticket (SH/HD)
+
+Title
+
+•New payment approval workflow
+
+Description
+
+As an AP user I want a configurable approval workflow.
+
+Change Order Reason
+
+•Given the client's need for a configurable approval workflow, additional development is required.
+
+Conditions of Satisfaction
+
+Behavior changes
+
+○The system will show a new approval workflow setting.
+
+ERP Integration Conditions
+
+○The ERP should receive the approval status.

@@ -1,85 +1,20 @@
-import type { ExtensionConfig } from "./types";
+import { defaultTemplateId } from "../templateRegistry";
+import type { EmailTemplateId } from "../templateRegistry/types";
+import type { ExtensionConfig, LegacyExtensionConfig } from "./types";
 
 const CONFIG_STORAGE_KEY = "onenoteToMailDraftConfig";
 
 export const defaultConfig: ExtensionConfig = {
   mailUrl: "https://mail.google.com/mail/u/0/#inbox?compose=new",
-  subjectTemplate: "[Ticket] {{titulo}}",
-  bodyTemplate: `
-<div style="font-family: Arial, sans-serif; font-size: 14px; color: #222;">
-  <p>Buenos días,</p>
-
-  <p>Te envío la estimación correspondiente al ticket. La misma deberá ser enviada a xxx.</p>
-
-  <h2 style="color: #1f4e79; font-size: 20px; font-weight: 400;">Título</h2>
-  <ul>
-    <li>{{titulo}}</li>
-  </ul>
-
-  <h2 style="color: #1f4e79; font-size: 20px; font-weight: 400;">Motivo de la Orden de Cambio</h2>
-  <ul>
-    <li>{{motivo}}</li>
-  </ul>
-
-  <h2 style="color: #1f4e79; font-size: 20px; font-weight: 400;">Descripción</h2>
-  <ul>
-    <li>{{descripcion}}</li>
-  </ul>
-
-  <h2 style="color: #1f4e79; font-size: 20px; font-weight: 400;">Condiciones de satisfacción</h2>
-
-  <p style="margin-left: 36px;"><strong>Cambios de comportamiento</strong></p>
-  <ul style="margin-left: 36px;">
-    {{cambios}}
-  </ul>
-
-  <p style="margin-left: 36px;"><strong>Condiciones de Integración con el ERP</strong></p>
-  <ul style="margin-left: 36px;">
-    {{integracion}}
-  </ul>
-
-  {{firma}}
-</div>
-`,
   signatureHtml: "",
   emptyFieldFallback: "",
-  fieldMappings: [
-    {
-      key: "titulo",
-      labels: ["Title", "Título", "Titulo"],
-      required: true
-    },
-    {
-      key: "motivo",
-      labels: ["Change Order Reason", "Motivo de la Orden de Cambio"],
-      required: true
-    },
-    {
-      key: "descripcion",
-      labels: ["Description", "Descripción", "Descripcion"],
-      required: true
-    },
-    {
-      key: "cambios",
-      labels: ["Behavior changes", "Cambios de comportamiento"],
-      required: true
-    },
-    {
-      key: "integracion",
-      labels: [
-        "ERP Integration Conditions",
-        "ERP Integration Conditons",
-        "Condiciones de Integración con el ERP",
-        "Condiciones de Integracion con el ERP"
-      ],
-      required: false
-    }
-  ],
+  ticketUrlTemplate: "https://request-sa2.odoo.com/web#id={{ticketNumber}}&menu_id=87&cids=1&action=140&model=project.task&view_type=form",
+  templateOverrides: {},
   selectors: {
     oneNoteRoot: "",
     gmailComposeDialog: "div[role='dialog']",
     gmailSubject: "input[name='subjectbox']",
-    gmailBody: "div[aria-label='Message Body'][contenteditable='true'], div[role='textbox'][contenteditable='true']"
+    gmailBody: "div[aria-label='Message Body'], div[role='textbox'][aria-label]"
   },
   flags: {
     insertSignature: true,
@@ -87,33 +22,60 @@ export const defaultConfig: ExtensionConfig = {
   }
 };
 
-const mergeConfig = (storedConfig?: Partial<ExtensionConfig>): ExtensionConfig => ({
-  ...defaultConfig,
-  ...storedConfig,
-  emptyFieldFallback: storedConfig?.emptyFieldFallback ?? defaultConfig.emptyFieldFallback,
-  selectors: {
-    ...defaultConfig.selectors,
-    ...storedConfig?.selectors
-  },
-  flags: {
-    ...defaultConfig.flags,
-    ...storedConfig?.flags
-  },
-  fieldMappings: storedConfig?.fieldMappings?.length
-    ? storedConfig.fieldMappings
-    : defaultConfig.fieldMappings
-});
+const migrateLegacyTemplateOverride = (
+  savedConfig: LegacyExtensionConfig | undefined
+): ExtensionConfig["templateOverrides"] => {
+  const existingOverrides = savedConfig?.templateOverrides ?? {};
+
+  if (
+    !savedConfig?.subjectTemplate &&
+    !savedConfig?.bodyTemplate &&
+    !savedConfig?.fieldMappings
+  ) {
+    return existingOverrides;
+  }
+
+  const legacyOverride = {
+    ...(savedConfig.subjectTemplate ? { subjectTemplate: savedConfig.subjectTemplate } : {}),
+    ...(savedConfig.bodyTemplate ? { bodyTemplate: savedConfig.bodyTemplate } : {}),
+    ...(savedConfig.fieldMappings ? { fieldMappings: savedConfig.fieldMappings } : {})
+  };
+
+  return {
+    ...existingOverrides,
+    [defaultTemplateId as EmailTemplateId]: {
+      ...existingOverrides[defaultTemplateId],
+      ...legacyOverride
+    }
+  };
+};
 
 export const getConfig = async (): Promise<ExtensionConfig> => {
   const result = await chrome.storage.local.get(CONFIG_STORAGE_KEY);
-  return mergeConfig(result[CONFIG_STORAGE_KEY] as Partial<ExtensionConfig> | undefined);
+  const savedConfig = result[CONFIG_STORAGE_KEY] as LegacyExtensionConfig | undefined;
+
+  return {
+    ...defaultConfig,
+    ...savedConfig,
+    templateOverrides: migrateLegacyTemplateOverride(savedConfig),
+    selectors: {
+      ...defaultConfig.selectors,
+      ...savedConfig?.selectors
+    },
+    flags: {
+      ...defaultConfig.flags,
+      ...savedConfig?.flags
+    }
+  };
 };
 
 export const saveConfig = async (config: ExtensionConfig): Promise<void> => {
-  await chrome.storage.local.set({ [CONFIG_STORAGE_KEY]: config });
+  await chrome.storage.local.set({
+    [CONFIG_STORAGE_KEY]: config
+  });
 };
 
 export const resetConfig = async (): Promise<ExtensionConfig> => {
-  await saveConfig(defaultConfig);
+  await chrome.storage.local.remove(CONFIG_STORAGE_KEY);
   return defaultConfig;
 };

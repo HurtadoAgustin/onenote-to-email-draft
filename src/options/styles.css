@@ -11,7 +11,7 @@ body {
 
 .container {
   margin: 0 auto;
-  max-width: 900px;
+  max-width: 980px;
   padding: 24px;
 }
 
@@ -35,6 +35,11 @@ body {
   padding: 16px;
 }
 
+.card h2 {
+  font-size: 18px;
+  margin: 0;
+}
+
 label {
   display: grid;
   gap: 6px;
@@ -54,6 +59,27 @@ textarea {
 
 textarea {
   resize: vertical;
+}
+
+.templateTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tabButton {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.tabButton.active {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.templateDescription {
+  color: #4b5563;
+  margin: -4px 0 0;
 }
 
 .footer {
@@ -80,4 +106,8 @@ button {
 .secondaryButton {
   background: #e5e7eb;
   color: #111827;
+}
+
+.inlineButton {
+  justify-self: start;
 }

@@ -8,7 +8,7 @@ export const escapeHtml = (value: string): string =>
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 
-const htmlKeys = new Set(["firma"]);
+const htmlKeys = new Set(["signature", "signatureSeparator", "firma", "firmaSeparador"]);
 const listItemKeys = new Set(["cambios", "integracion"]);
 
 type ListNode = {
