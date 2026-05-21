@@ -74,7 +74,21 @@ const generateGmailDraft = async (
     data,
     template.fieldMappings
   );
-  const fieldKeys = template.fieldMappings.map(mapping => mapping.key);
+  const getTemplatePlaceholderKeys = (...templates: string[]): string[] =>
+    Array.from(
+      new Set(
+        templates.flatMap(templateText =>
+          Array.from(templateText.matchAll(/{{\s*([\w.-]+)\s*}}/g)).map(match => match[1])
+        )
+      )
+    );
+
+  const fieldKeys = Array.from(
+    new Set([
+      ...template.fieldMappings.map(mapping => mapping.key),
+      ...getTemplatePlaceholderKeys(template.subjectTemplate, template.bodyTemplate)
+    ])
+  );
   const fieldLogs = buildFoundFieldLogs(data, template.fieldMappings);
   const computedTemplateData = {
     ...data,

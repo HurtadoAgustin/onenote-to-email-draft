@@ -87,6 +87,28 @@ const renderNestedNodes = (nodes: ListNode[]): string =>
 const renderListItems = (value: TemplateValue): string =>
   renderNestedNodes(buildNestedList(normalizeValueToListItems(value)));
 
+
+const renderUpdateConsiderations = (value: TemplateValue): string => {
+  const [title, ...details] = normalizeValueToListItems(value).filter(item =>
+    item.text.trim()
+  );
+
+  if (!title) return "";
+
+  const detailItemsHtml = details
+    .map(item => `<li><em>${escapeHtml(item.text.trim())}</em></li>`)
+    .join("");
+
+  const detailsHtml = detailItemsHtml
+    ? `<ul style="margin: 0 0 0 18px; padding-left: 18px; list-style-type: circle;">${detailItemsHtml}</ul>`
+    : "";
+
+  return `<div style="margin: 0 0 0 36px;">
+  <p style="margin: 0 0 4px 0;"><strong>${escapeHtml(title.text.trim())}</strong></p>
+  ${detailsHtml}
+</div>`;
+};
+
 const stringifyValue = (value: TemplateValue): string => {
   if (Array.isArray(value)) {
     return value.map(item => item.text).join(" ").trim();
@@ -98,6 +120,10 @@ const stringifyValue = (value: TemplateValue): string => {
 const renderValue = (key: string, value: TemplateValue): string => {
   if (htmlKeys.has(key)) {
     return stringifyValue(value);
+  }
+
+  if (key === "updateConsiderations") {
+    return renderUpdateConsiderations(value);
   }
 
   if (listItemKeys.has(key)) {

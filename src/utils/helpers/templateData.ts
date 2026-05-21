@@ -1,7 +1,10 @@
 import type { FieldMapping, TemplateData, TemplateValue } from "../types";
 
 export const isEmptyTemplateValue = (value: TemplateValue | undefined): boolean => {
-  if (Array.isArray(value)) return value.length === 0;
+  if (Array.isArray(value)) {
+    return value.length === 0 || value.every(item => !item.text.trim());
+  }
+
   return !value?.trim();
 };
 
@@ -24,11 +27,16 @@ export const applyEmptyFieldFallback = (
 
   if (!fallback) return data;
 
-  return fieldKeys.reduce<TemplateData>(
-    (acc, key) => ({
+  return fieldKeys.reduce<TemplateData>((acc, key) => {
+    const currentValue = acc[key];
+
+    if (!isEmptyTemplateValue(currentValue)) return acc;
+
+    return {
       ...acc,
-      [key]: isEmptyTemplateValue(acc[key]) ? fallback : acc[key]
-    }),
-    { ...data }
-  );
+      [key]: Array.isArray(currentValue)
+        ? [{ text: fallback, level: 0 }]
+        : fallback
+    };
+  }, { ...data });
 };

@@ -52,7 +52,9 @@ ERP Integration Conditions
 
 ○The ERP should receive the approval status.
 
-Update Considerations
+Consideraciones por actualización
+
+Cambio actualizable
 
 This change is updateable and should not be included in ERP Integration Conditions.
 
@@ -69,7 +71,8 @@ Technical Conditions
 
 Additional context
 
-○Coordinate the deployment window with ACME.
+○
+-
 
 Estimation breakdown
 

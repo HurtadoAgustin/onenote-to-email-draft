@@ -23,6 +23,7 @@ const LIST_LEVEL_TOLERANCE_PX = 18;
 const listKeys = new Set([
   "cambios",
   "integracion",
+  "updateConsiderations",
   "technicalConditions",
   "additionalContext"
 ]);
@@ -87,10 +88,16 @@ const getLineDepth = (value: string): number => {
 const isDividerRawLine = (value: string): boolean =>
   /^\s*[-_—–]{5,}\s*$/.test(value);
 
-const stripLeadingBullet = (value: string): string =>
-  value
+const isStandaloneDashContent = (value: string): boolean =>
+  /^[-–—]$/.test(value.trim());
+
+const stripLeadingBullet = (value: string): string => {
+  if (isStandaloneDashContent(value)) return value.trim();
+
+  return value
     .replace(/^\s*[•·▪▫◦○●■□‣⁃-]+\s*/, "")
     .replace(/^\s*[oO](?=\s|[A-ZÁÉÍÓÚÑ])\s*/, "");
+};
 
 const cleanText = (value: string): string =>
   stripLeadingBullet(value)
@@ -155,8 +162,15 @@ const headingGroups = {
   ],
   updateConsiderations: [
     "update considerations",
+    "update consideration",
+    "consideraciones para updates",
+    "consideraciones para update",
+    "consideraciones de updates",
+    "consideraciones de update",
     "consideraciones de actualizacion",
-    "consideraciones de actualización"
+    "consideraciones de actualización",
+    "consideraciones por actualizacion",
+    "consideraciones por actualización"
   ],
   designNotes: [
     "design notes",
@@ -246,7 +260,7 @@ const isAnyKnownHeading = (line: ParsedLine): boolean =>
   );
 
 const isBulletOnlyLine = (line: ParsedLine): boolean =>
-  /^[oO○◦●•·▪▫■□‣⁃-]$/.test(line.text.trim());
+  /^[oO○◦●•·▪▫■□‣⁃]$/.test(line.text.trim());
 
 const removeExampleBlocks = (lines: ParsedLine[]): ParsedLine[] => {
   const result: ParsedLine[] = [];
@@ -423,8 +437,7 @@ const joinAsParagraph = (lines: ParsedLine[]): string =>
 const parseChangeOrderDocumentation = (text: string): TemplateData => {
   const lines = removeExampleBlocks(getLines(text));
 
-  const sectionAfterConditionsStops = [
-    headingGroups.updateConsiderations,
+  const conditionsEndStops = [
     headingGroups.designNotes,
     headingGroups.internalContext,
     headingGroups.estimationBreakdown,
@@ -432,6 +445,11 @@ const parseChangeOrderDocumentation = (text: string): TemplateData => {
     headingGroups.originalRequest,
     headingGroups.originalRequestTableFields,
     headingGroups.acceptanceMarkers
+  ];
+
+  const sectionAfterConditionsStops = [
+    headingGroups.updateConsiderations,
+    ...conditionsEndStops
   ];
 
   const titleLines = getSectionLines(lines, headingGroups.title, [
@@ -455,7 +473,7 @@ const parseChangeOrderDocumentation = (text: string): TemplateData => {
   const conditionsLines = getSectionLines(
     lines,
     headingGroups.conditionsOfSatisfaction,
-    sectionAfterConditionsStops
+    conditionsEndStops
   );
 
   const behaviorChangeLines = getSectionLines(
@@ -463,7 +481,8 @@ const parseChangeOrderDocumentation = (text: string): TemplateData => {
     headingGroups.behaviorChanges,
     [
       headingGroups.erpIntegrationConditions,
-      ...sectionAfterConditionsStops
+      headingGroups.updateConsiderations,
+      ...conditionsEndStops
     ]
   );
 
@@ -471,8 +490,27 @@ const parseChangeOrderDocumentation = (text: string): TemplateData => {
     getSectionLines(
       conditionsLines,
       headingGroups.erpIntegrationConditions,
-      sectionAfterConditionsStops
+      [
+        headingGroups.updateConsiderations,
+        ...conditionsEndStops
+      ]
     )
+  );
+
+  const updateConsiderationLines = getSectionLines(
+    conditionsLines,
+    headingGroups.updateConsiderations,
+    [
+      ...conditionsEndStops,
+      headingGroups.technicalConditions,
+      headingGroups.additionalContext,
+      headingGroups.title,
+      headingGroups.description,
+      headingGroups.changeOrderReason,
+      headingGroups.conditionsOfSatisfaction,
+      headingGroups.behaviorChanges,
+      headingGroups.erpIntegrationConditions
+    ]
   );
 
   const designNotesSectionStops = [
@@ -518,6 +556,7 @@ const parseChangeOrderDocumentation = (text: string): TemplateData => {
     motivo: joinAsParagraph(reasonLines),
     cambios: normalizeListLevels(behaviorChangeLines),
     integracion: normalizeListLevels(erpIntegrationLines),
+    updateConsiderations: normalizeListLevels(updateConsiderationLines),
     technicalConditions: normalizeListLevels(technicalConditionLines),
     additionalContext: normalizeListLevels(additionalContextLines)
   };

@@ -55,6 +55,21 @@ export const changeOrderContentFieldMappings: FieldMapping[] = [
     required: false
   },
   {
+    key: "updateConsiderations",
+    labels: [
+      "Update Considerations",
+      "Consideraciones para Updates",
+      "Consideraciones para Update",
+      "Consideraciones de Updates",
+      "Consideraciones de Update",
+      "Consideraciones de Actualización",
+      "Consideraciones de Actualizacion",
+      "Consideraciones por actualización",
+      "Consideraciones por actualizacion"
+    ],
+    required: false
+  },
+  {
     key: "technicalConditions",
     labels: [
       "Technical Conditions",

@@ -19,6 +19,16 @@
         "level": 0
       }
     ],
+    "updateConsiderations": [
+      {
+        "text": "Cambio actualizable",
+        "level": 0
+      },
+      {
+        "text": "This change is updateable and should not be included in ERP Integration Conditions.",
+        "level": 0
+      }
+    ],
     "technicalConditions": [
       {
         "text": "Use a feature toggle for the approval workflow.",
@@ -31,13 +41,23 @@
     ],
     "additionalContext": [
       {
-        "text": "Coordinate the deployment window with ACME.",
+        "text": "-",
         "level": 0
       }
     ]
   },
   "subject": "[Esker-ACME AP][Estimación] T-12345 - New payment approval workflow",
   "ticketUrl": "https://request-sa2.odoo.com/web#id=12345&menu_id=87&cids=1&action=140&model=project.task&view_type=form",
+  "updateConsiderations": [
+    {
+      "text": "Cambio actualizable",
+      "level": 0
+    },
+    {
+      "text": "This change is updateable and should not be included in ERP Integration Conditions.",
+      "level": 0
+    }
+  ],
   "technicalConditions": [
     {
       "text": "Use a feature toggle for the approval workflow.",
@@ -50,7 +70,7 @@
   ],
   "additionalContext": [
     {
-      "text": "Coordinate the deployment window with ACME.",
+      "text": "-",
       "level": 0
     }
   ]

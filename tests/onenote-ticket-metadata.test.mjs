@@ -18,6 +18,7 @@ await build({
       export { renderTemplate } from "./src/utils/template.ts";
       export { buildTicketUrlTemplateData } from "./src/utils/helpers/ticketUrl.ts";
       export { buildEstimationBreakdownTemplateData } from "./src/utils/helpers/estimationBreakdown.ts";
+      export { applyEmptyFieldFallback } from "./src/utils/helpers/templateData.ts";
       export { estimationTemplate } from "./src/templates/estimation.ts";
     `,
     resolveDir: process.cwd(),
@@ -30,6 +31,7 @@ await build({
 });
 
 const {
+  applyEmptyFieldFallback,
   buildEstimationBreakdownTemplateData,
   buildTicketUrlTemplateData,
   defaultConfig,
@@ -65,8 +67,18 @@ assert.deepEqual(parsedData.integracion, [
 ]);
 assert.doesNotMatch(
   JSON.stringify(parsedData.integracion),
-  /Update Considerations|Design notes|Technical Conditions|internal implementation|Estimation breakdown/
+  /Consideraciones para Updates|Cambio actualizable|Design notes|Technical Conditions|internal implementation|Estimation breakdown/
 );
+assert.deepEqual(parsedData.updateConsiderations, [
+  {
+    text: "Cambio actualizable",
+    level: 0
+  },
+  {
+    text: "This change is updateable and should not be included in ERP Integration Conditions.",
+    level: 0
+  }
+]);
 assert.equal(subject, "[Esker-ACME AP][Estimación] T-12345 - New payment approval workflow");
 assert.equal(
   templateData.ticketUrl,
@@ -89,15 +101,64 @@ assert.deepEqual(parsedData.technicalConditions, [
 ]);
 assert.deepEqual(parsedData.additionalContext, [
   {
-    text: "Coordinate the deployment window with ACME.",
+    text: "-",
     level: 0
   }
 ]);
 assert.match(html, /Internal context \(not to be shared with customer\)/);
+assert.match(html, /<h2[^>]*>Consideraciones para Updates<\/h2>/);
+assert.match(html, /<strong>Cambio actualizable<\/strong>/);
+assert.doesNotMatch(html, /<li>Cambio actualizable<\/li>/);
+assert.match(
+  html,
+  /<li><em>This change is updateable and should not be included in ERP Integration Conditions\.<\/em><\/li>/
+);
+assert.match(fixture, /Consideraciones por actualización/);
 assert.match(html, /Technical Conditions/);
 assert.match(html, /Additional context/);
+assert.match(html, /<li>-<\/li>/);
 assert.match(html, /Estimation breakdown/);
 assert.match(html, /<table[\s\S]*Task[\s\S]*Hours[\s\S]*Total[\s\S]*<\/table>/);
+assert.doesNotMatch(html, /<\/table>\s*<br \/>/);
+assert.doesNotMatch(html, /margin: 10px 0 28px 0/);
+assert.match(html, /<h2[^>]*margin: 18px 0 8px 0;[^>]*>Design notes<\/h2>/);
+assert.match(html, /<h2[^>]*margin: 18px 0 8px 0;[^>]*>Estimation breakdown<\/h2>/);
+
+const fixtureWithoutAdditionalContext = fixture.replace(
+  "Additional context\n\n○\n-",
+  "Additional context\n\n○"
+);
+const parsedDataWithoutAdditionalContext = parseStructuredText(
+  fixtureWithoutAdditionalContext,
+  []
+);
+const fallbackData = applyEmptyFieldFallback(
+  parsedDataWithoutAdditionalContext,
+  estimationTemplate.fieldMappings.map(mapping => mapping.key),
+  "No aplica"
+);
+const fallbackHtml = renderTemplate(estimationTemplate.bodyTemplate, {
+  ...fallbackData,
+  ...buildEstimationBreakdownTemplateData(estimationTemplate.id)
+});
+
+assert.deepEqual(parsedDataWithoutAdditionalContext.additionalContext, []);
+assert.match(fallbackHtml, /<li>No aplica<\/li>/);
+
+const fallbackDataFromEmptyItem = applyEmptyFieldFallback(
+  { additionalContext: [{ text: "", level: 0 }] },
+  ["additionalContext"],
+  "No aplica"
+);
+
+assert.deepEqual(fallbackDataFromEmptyItem.additionalContext, [
+  { text: "No aplica", level: 0 }
+]);
+assert.match(
+  renderTemplate("<ul>{{additionalContext}}</ul>", fallbackDataFromEmptyItem),
+  /<ul><li>No aplica<\/li><\/ul>/
+);
+
 assert.doesNotMatch(html, /data:image\/png;base64/);
 assert.ok(
   html.indexOf("Condiciones de Integración con el ERP") < html.indexOf("Internal context (not to be shared with customer)"),
@@ -108,6 +169,7 @@ const result = {
   parsedData,
   subject,
   ticketUrl: templateData.ticketUrl,
+  updateConsiderations: parsedData.updateConsiderations,
   technicalConditions: parsedData.technicalConditions,
   additionalContext: parsedData.additionalContext
 };
