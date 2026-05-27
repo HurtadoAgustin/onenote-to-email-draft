@@ -9,10 +9,6 @@ export const escapeHtml = (value: string): string =>
     .replaceAll("'", "&#039;");
 
 const htmlKeys = new Set([
-  "signature",
-  "signatureSeparator",
-  "firma",
-  "firmaSeparador",
   "estimationBreakdownTable"
 ]);
 const listItemKeys = new Set([

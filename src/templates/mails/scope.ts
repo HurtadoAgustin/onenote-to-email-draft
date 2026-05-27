@@ -1,5 +1,6 @@
-import { changeOrderFieldMappings } from "../templateRegistry/sharedFieldMappings";
-import type { EmailTemplate } from "../templateRegistry/types";
+import { changeOrderDocumentationProfile } from "../docs/changeOrderDocumentation";
+import { changeOrderFieldMappings } from "../../templateRegistry/sharedFieldMappings";
+import type { EmailTemplate } from "../../utils/types";
 
 export const scopeTemplate: EmailTemplate = {
   id: "scope",
@@ -8,7 +9,7 @@ export const scopeTemplate: EmailTemplate = {
   subjectTemplate: "[Esker-{{clientAndModule}}][{{templateType}}] {{ticketNumber}} - {{titulo}}",
   bodyTemplate: `
 <div style="font-family: Arial, sans-serif; font-size: 14px; color: #222;">
-  <p>Buenos días,</p>
+  <p>Buenos días{{technicalArchitect}},</p>
 
   <p>Comparto el alcance correspondiente al ticket <a href="{{ticketUrl}}" target="_blank" style="color: #1b77c5; text-decoration: underline;">{{ticketNumber}}</a>:</p>
 
@@ -35,9 +36,8 @@ export const scopeTemplate: EmailTemplate = {
   <h2 style="color: #1f4e79; font-size: 18px; font-weight: 400; margin: 18px 0 8px 0;">Consideraciones para Updates</h2>
   {{updateConsiderations}}
 
-  {{signatureSeparator}}
-  {{signature}}
 </div>
-`,
-  fieldMappings: changeOrderFieldMappings
+  `,
+  fieldMappings: changeOrderFieldMappings,
+  documentationProfile: changeOrderDocumentationProfile
 };

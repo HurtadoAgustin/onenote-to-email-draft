@@ -6,11 +6,27 @@ export type FieldMapping = {
   required?: boolean;
 };
 
+export type DocumentationProfile = {
+  id: "changeOrder";
+  sectionHeadings: Record<string, string[]>;
+  listFieldKeys: string[];
+};
+
 export type EmailTemplateOverride = Partial<{
   subjectTemplate: string;
   bodyTemplate: string;
   fieldMappings: FieldMapping[];
 }>;
+
+export type EmailTemplate = {
+  id: EmailTemplateId;
+  label: string;
+  description: string;
+  subjectTemplate: string;
+  bodyTemplate: string;
+  fieldMappings: FieldMapping[];
+  documentationProfile: DocumentationProfile;
+};
 
 export type ParsedListItem = {
   text: string;
@@ -44,13 +60,12 @@ export type ExtensionSelectors = {
 };
 
 export type ExtensionFlags = {
-  insertSignature: boolean;
   allowIncompleteFields: boolean;
 };
 
 export type ExtensionConfig = {
   mailUrl: string;
-  signatureHtml: string;
+  technicalArchitect: string;
   emptyFieldFallback: string;
   ticketUrlTemplate: string;
   templateOverrides: Partial<Record<EmailTemplateId, EmailTemplateOverride>>;

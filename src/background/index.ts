@@ -4,7 +4,6 @@ import { getActiveTab, sendMessageToTab } from "../utils/helpers/chrome";
 import { getErrorMessage } from "../utils/helpers/error";
 import { extractOneNoteTextFromTab } from "../utils/helpers/onenoteExtraction";
 import { buildEstimationBreakdownTemplateData } from "../utils/helpers/estimationBreakdown";
-import { buildSignatureTemplateData } from "../utils/helpers/signature";
 import { buildTicketUrlTemplateData } from "../utils/helpers/ticketUrl";
 import {
   applyEmptyFieldFallback,
@@ -62,8 +61,13 @@ const generateGmailDraft = async (
   }
 
   const parsedData = applyDomListLevelHints(
-    parseStructuredText(oneNoteResponse.text, template.fieldMappings),
-    oneNoteResponse.domTextItems
+    parseStructuredText(
+      oneNoteResponse.text,
+      template.fieldMappings,
+      template.documentationProfile
+    ),
+    oneNoteResponse.domTextItems,
+    template.documentationProfile
   );
   const data = {
     ...parsedData,
@@ -88,7 +92,7 @@ const generateGmailDraft = async (
       ...template.fieldMappings.map(mapping => mapping.key),
       ...getTemplatePlaceholderKeys(template.subjectTemplate, template.bodyTemplate)
     ])
-  );
+  ).filter(key => key !== "technicalArchitect");
   const fieldLogs = buildFoundFieldLogs(data, template.fieldMappings);
   const computedTemplateData = {
     ...data,
@@ -100,6 +104,9 @@ const generateGmailDraft = async (
     fieldKeys,
     config.emptyFieldFallback
   );
+  const formattedTechnicalArchitect = config.technicalArchitect.trim()
+    ? ` ${config.technicalArchitect.trim()}`
+    : "";
 
   console.log("Selected email template:", template.id);
   console.log("Parsed OneNote data:", data);
@@ -120,7 +127,7 @@ const generateGmailDraft = async (
   const subject = renderTemplate(template.subjectTemplate, dataForTemplate);
   const html = renderTemplate(template.bodyTemplate, {
     ...dataForTemplate,
-    ...buildSignatureTemplateData(config)
+    technicalArchitect: formattedTechnicalArchitect
   });
 
   const gmailTab = await chrome.tabs.create({

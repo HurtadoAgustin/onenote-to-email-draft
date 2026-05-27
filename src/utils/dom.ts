@@ -53,16 +53,31 @@ export const insertHtmlIntoContentEditable = (
 
   const selection = window.getSelection();
   const range = document.createRange();
+  const gmailSignature = element.querySelector<HTMLElement>(
+    ".gmail_signature, [data-smartmail='gmail_signature']"
+  );
 
-  range.selectNodeContents(element);
-  range.collapse(false);
+  if (gmailSignature) {
+    range.setStartBefore(gmailSignature);
+    range.collapse(true);
+  } else {
+    range.selectNodeContents(element);
+    range.collapse(false);
+  }
+
   selection?.removeAllRanges();
   selection?.addRange(range);
 
-  const inserted = document.execCommand("insertHTML", false, html);
+  const htmlWithSpacer = gmailSignature ? `${html}<br />` : html;
+  const inserted = document.execCommand("insertHTML", false, htmlWithSpacer);
 
   if (!inserted) {
-    element.innerHTML = html;
+    if (gmailSignature) {
+      gmailSignature.insertAdjacentHTML("beforebegin", htmlWithSpacer);
+    } else {
+      element.innerHTML = html;
+    }
+
     element.dispatchEvent(new InputEvent("input", { bubbles: true }));
   }
 };
