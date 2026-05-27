@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
 import { emailTemplates } from "../templateRegistry";
-import type { EmailTemplateId } from "../templateRegistry/types";
+import type { EmailTemplateId } from "../utils/types";
 import type { GenerateDraftResponse } from "../utils/types";
 import "./styles.css";
 

@@ -74,6 +74,38 @@ Additional context
 ○
 -
 
+Implementation/Components modified
+
+• Processes/Vendor invoice/customscript.js
+
+Layout Modifications
+
+• New field in the form.
+
+Upgradability notes
+
+Number of Hooks
+Script/Library (where it is called)
+Function (called - full namespace)
+
+Changelogs (EOD Configuration changes)
+
+• Profile customization was applied.
+
+Additional Development Notes
+
+• Internal development note.
+
+Key email communication
+
+Completed in QA
+Acceptance of functionality in QA
+
+Updates
+
+1. 2026-05-26
+Description
+
 Estimation breakdown
 
 Task

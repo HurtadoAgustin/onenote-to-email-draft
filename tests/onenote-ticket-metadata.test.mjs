@@ -19,7 +19,7 @@ await build({
       export { buildTicketUrlTemplateData } from "./src/utils/helpers/ticketUrl.ts";
       export { buildEstimationBreakdownTemplateData } from "./src/utils/helpers/estimationBreakdown.ts";
       export { applyEmptyFieldFallback } from "./src/utils/helpers/templateData.ts";
-      export { estimationTemplate } from "./src/templates/estimation.ts";
+      export { estimationTemplate } from "./src/templates/mails/estimation.ts";
     `,
     resolveDir: process.cwd(),
     loader: "ts"
@@ -53,6 +53,10 @@ const templateData = {
 };
 const subject = renderTemplate(estimationTemplate.subjectTemplate, templateData);
 const html = renderTemplate(estimationTemplate.bodyTemplate, templateData);
+const htmlWithTechnicalArchitect = renderTemplate(estimationTemplate.bodyTemplate, {
+  ...templateData,
+  technicalArchitect: " John Doe"
+});
 
 assert.equal(parsedData.choNumber, "CHO-012");
 assert.equal(parsedData.ticketNumber, "T-12345");
@@ -67,7 +71,7 @@ assert.deepEqual(parsedData.integracion, [
 ]);
 assert.doesNotMatch(
   JSON.stringify(parsedData.integracion),
-  /Consideraciones para Updates|Cambio actualizable|Design notes|Technical Conditions|internal implementation|Estimation breakdown/
+  /Consideraciones para Updates|Cambio actualizable|Design notes|Technical Conditions|internal implementation|Key email communication|Estimation breakdown/
 );
 assert.deepEqual(parsedData.updateConsiderations, [
   {
@@ -88,6 +92,8 @@ assert.match(
   html,
   /correspondiente al ticket <a href="https:\/\/request-sa2\.odoo\.com\/web#id=12345&amp;menu_id=87&amp;cids=1&amp;action=140&amp;model=project\.task&amp;view_type=form"[^>]*>T-12345<\/a>/
 );
+assert.match(html, /Buenos días,/);
+assert.match(htmlWithTechnicalArchitect, /Buenos días John Doe,/);
 assert.match(html, /La misma deberá ser enviada a Jane Doe\./);
 assert.deepEqual(parsedData.technicalConditions, [
   {
@@ -105,6 +111,24 @@ assert.deepEqual(parsedData.additionalContext, [
     level: 0
   }
 ]);
+assert.doesNotMatch(
+  JSON.stringify(parsedData.additionalContext),
+  /Implementation\/Components modified|Layout Modifications|Upgradability notes|Changelogs|Additional Development Notes|Key email communication|Updates/
+);
+
+const fixtureWithExampleKeyword = fixture.replace(
+  "As an AP user I want a configurable approval workflow.",
+  "As an AP user I want a configurable approval workflow, por ejemplo para facturas."
+);
+const parsedDataWithExampleKeyword = parseStructuredText(
+  fixtureWithExampleKeyword,
+  []
+);
+
+assert.equal(
+  parsedDataWithExampleKeyword.descripcion,
+  "As an AP user I want a configurable approval workflow, por ejemplo para facturas."
+);
 assert.match(html, /Internal context \(not to be shared with customer\)/);
 assert.match(html, /<h2[^>]*>Consideraciones para Updates<\/h2>/);
 assert.match(html, /<strong>Cambio actualizable<\/strong>/);

@@ -4,7 +4,7 @@ import {
   emailTemplates,
   getEmailTemplateForConfig
 } from "../templateRegistry";
-import type { EmailTemplateId, EmailTemplateOverride } from "../templateRegistry/types";
+import type { EmailTemplateId, EmailTemplateOverride } from "../utils/types";
 import { defaultConfig, getConfig, resetConfig, saveConfig } from "../utils/config";
 import type {
   ExtensionConfig,
@@ -159,11 +159,10 @@ const App = () => {
         </label>
 
         <label>
-          HTML signature
-          <textarea
-            rows={4}
-            value={config.signatureHtml}
-            onChange={event => updateConfigField("signatureHtml", event.target.value)}
+          Technical architect
+          <input
+            value={config.technicalArchitect}
+            onChange={event => updateConfigField("technicalArchitect", event.target.value)}
           />
         </label>
 

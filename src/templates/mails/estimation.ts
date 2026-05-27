@@ -1,5 +1,6 @@
-import { changeOrderFieldMappings } from "../templateRegistry/sharedFieldMappings";
-import type { EmailTemplate } from "../templateRegistry/types";
+import { changeOrderDocumentationProfile } from "../docs/changeOrderDocumentation";
+import { changeOrderFieldMappings } from "../../templateRegistry/sharedFieldMappings";
+import type { EmailTemplate } from "../../utils/types";
 
 export const estimationTemplate: EmailTemplate = {
   id: "estimation",
@@ -8,7 +9,7 @@ export const estimationTemplate: EmailTemplate = {
   subjectTemplate: "[Esker-{{clientAndModule}}][{{templateType}}] {{ticketNumber}} - {{titulo}}",
   bodyTemplate: `
 <div style="font-family: Arial, sans-serif; font-size: 14px; color: #222;">
-  <p>Buenos días,</p>
+  <p>Buenos días{{technicalArchitect}},</p>
 
   <p>Te envío la estimación correspondiente al ticket <a href="{{ticketUrl}}" target="_blank" style="color: #1b77c5; text-decoration: underline;">{{ticketNumber}}</a>. La misma deberá ser enviada a {{clientChoRequester}}.</p>
 
@@ -63,10 +64,8 @@ export const estimationTemplate: EmailTemplate = {
   {{estimationBreakdownTable}}
 
   <p>Quedo atento a cualquier comentario o sugerencia.<br />Saludos.</p>
-
-  {{signatureSeparator}}
-  {{signature}}
 </div>
-`,
-  fieldMappings: changeOrderFieldMappings
+  `,
+  fieldMappings: changeOrderFieldMappings,
+  documentationProfile: changeOrderDocumentationProfile
 };

@@ -1,12 +1,12 @@
 import { defaultTemplateId } from "../templateRegistry";
-import type { EmailTemplateId } from "../templateRegistry/types";
+import type { EmailTemplateId } from "./types";
 import type { ExtensionConfig, LegacyExtensionConfig } from "./types";
 
 const CONFIG_STORAGE_KEY = "onenoteToMailDraftConfig";
 
 export const defaultConfig: ExtensionConfig = {
   mailUrl: "https://mail.google.com/mail/u/0/#inbox?compose=new",
-  signatureHtml: "",
+  technicalArchitect: "",
   emptyFieldFallback: "",
   ticketUrlTemplate: "https://request-sa2.odoo.com/web#id={{ticketNumber}}&menu_id=87&cids=1&action=140&model=project.task&view_type=form",
   templateOverrides: {},
@@ -17,7 +17,6 @@ export const defaultConfig: ExtensionConfig = {
     gmailBody: "div[aria-label='Message Body'], div[role='textbox'][aria-label]"
   },
   flags: {
-    insertSignature: true,
     allowIncompleteFields: true
   }
 };
@@ -55,16 +54,19 @@ export const getConfig = async (): Promise<ExtensionConfig> => {
   const savedConfig = result[CONFIG_STORAGE_KEY] as LegacyExtensionConfig | undefined;
 
   return {
-    ...defaultConfig,
-    ...savedConfig,
+    mailUrl: savedConfig?.mailUrl ?? defaultConfig.mailUrl,
+    technicalArchitect: savedConfig?.technicalArchitect ?? defaultConfig.technicalArchitect,
+    emptyFieldFallback: savedConfig?.emptyFieldFallback ?? defaultConfig.emptyFieldFallback,
+    ticketUrlTemplate: savedConfig?.ticketUrlTemplate ?? defaultConfig.ticketUrlTemplate,
     templateOverrides: migrateLegacyTemplateOverride(savedConfig),
     selectors: {
       ...defaultConfig.selectors,
       ...savedConfig?.selectors
     },
     flags: {
-      ...defaultConfig.flags,
-      ...savedConfig?.flags
+      allowIncompleteFields:
+        savedConfig?.flags?.allowIncompleteFields ??
+        defaultConfig.flags.allowIncompleteFields
     }
   };
 };

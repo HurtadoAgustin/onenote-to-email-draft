@@ -1,10 +1,12 @@
 import type {
+  DocumentationProfile,
   FieldMapping,
   OneNoteDomTextItem,
   ParsedListItem,
   TemplateData,
   TemplateValue
 } from "./types";
+import { changeOrderDocumentationProfile } from "../templates/docs/changeOrderDocumentation";
 
 type ParsedLine = {
   raw: string;
@@ -20,13 +22,8 @@ type MatchedDomHint = {
 };
 
 const LIST_LEVEL_TOLERANCE_PX = 18;
-const listKeys = new Set([
-  "cambios",
-  "integracion",
-  "updateConsiderations",
-  "technicalConditions",
-  "additionalContext"
-]);
+const headingGroups = changeOrderDocumentationProfile.sectionHeadings;
+const allHeadingLabelGroups = Object.values(headingGroups);
 
 const normalizeForMatch = (value: string): string =>
   value
@@ -136,111 +133,14 @@ const getLines = (text: string): ParsedLine[] =>
     .map(parseLine)
     .filter((line): line is ParsedLine => Boolean(line));
 
-const headingGroups = {
-  title: ["title", "titulo", "título"],
-  description: ["description", "descripcion", "descripción"],
-  changeOrderReason: [
-    "change order reason",
-    "motivo de la orden de cambio",
-    "motivo"
-  ],
-  conditionsOfSatisfaction: [
-    "conditions of satisfaction",
-    "condiciones de satisfaccion",
-    "condiciones de satisfacción"
-  ],
-  behaviorChanges: [
-    "behavior changes",
-    "behavior change",
-    "cambios de comportamiento"
-  ],
-  erpIntegrationConditions: [
-    "erp integration conditions",
-    "erp integration conditons",
-    "condiciones de integracion con el erp",
-    "condiciones de integración con el erp"
-  ],
-  updateConsiderations: [
-    "update considerations",
-    "update consideration",
-    "consideraciones para updates",
-    "consideraciones para update",
-    "consideraciones de updates",
-    "consideraciones de update",
-    "consideraciones de actualizacion",
-    "consideraciones de actualización",
-    "consideraciones por actualizacion",
-    "consideraciones por actualización"
-  ],
-  designNotes: [
-    "design notes",
-    "notas de diseño"
-  ],
-  internalContext: [
-    "internal context",
-    "internal context not to be shared with customer",
-    "contexto interno"
-  ],
-  estimationBreakdown: [
-    "estimation breakdown",
-    "desglose de estimacion",
-    "desglose de estimación"
-  ],
-  responsibleOfEstimation: [
-    "responsible of estimation",
-    "responsable de estimacion",
-    "responsable de estimación"
-  ],
-  acceptanceOfConditions: [
-    "acceptance of conditions of satisfaction",
-    "aceptacion de condiciones de satisfaccion",
-    "aceptación de condiciones de satisfacción"
-  ],
-  responsibleOfDevelopment: [
-    "responsible of development",
-    "responsable de desarrollo"
-  ],
-  technicalConditions: [
-    "technical conditions",
-    "condiciones tecnicas",
-    "condiciones técnicas"
-  ],
-  additionalContext: [
-    "additional context",
-    "contexto adicional"
-  ],
-  keyCommunicationPoints: [
-    "key communication points",
-    "puntos clave de comunicacion",
-    "puntos clave de comunicación"
-  ],
-  originalRequest: [
-    "original request",
-    "solicitud original",
-    "pedido original",
-    "requerimiento original"
-  ],
-  originalRequestTableFields: [
-    "full name",
-    "role",
-    "original email/file with request",
-    "client & module",
-    "client and module",
-    "original helpdesk ticket (sh/hd)",
-    "original helpdesk ticket sh/hd"
-  ],
-  acceptanceMarkers: [
-    "acceptance of functionality attached",
-    "acceptance of functionality in qa",
-    "completed in qa",
-    "em file"
-  ],
-  example: ["example", "ejemplo"]
-};
-
-const allKnownHeadings = Object.values(headingGroups)
+const allKnownHeadings = allHeadingLabelGroups
   .flat()
   .map(normalizeForMatch);
+
+const getAllHeadingGroupsExcept = (excludedKeys: string[] = []): string[][] =>
+  Object.entries(headingGroups)
+    .filter(([key]) => !excludedKeys.includes(key))
+    .map(([, labels]) => labels);
 
 const isSameOrStartsWithHeading = (line: ParsedLine, label: string): boolean => {
   const normalizedLabel = normalizeForMatch(label);
@@ -261,28 +161,6 @@ const isAnyKnownHeading = (line: ParsedLine): boolean =>
 
 const isBulletOnlyLine = (line: ParsedLine): boolean =>
   /^[oO○◦●•·▪▫■□‣⁃]$/.test(line.text.trim());
-
-const removeExampleBlocks = (lines: ParsedLine[]): ParsedLine[] => {
-  const result: ParsedLine[] = [];
-  let isSkippingExampleBlock = false;
-
-  lines.forEach(line => {
-    if (isHeading(line, headingGroups.example)) {
-      isSkippingExampleBlock = true;
-      return;
-    }
-
-    if (isAnyKnownHeading(line)) {
-      isSkippingExampleBlock = false;
-    }
-
-    if (!isSkippingExampleBlock) {
-      result.push(line);
-    }
-  });
-
-  return result;
-};
 
 const escapeRegExp = (value: string): string =>
   value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -390,23 +268,7 @@ const removeEmptyVisualItems = (lines: ParsedLine[]): ParsedLine[] =>
   lines.filter(line => !isBulletOnlyLine(line));
 
 const sanitizeErpIntegrationLines = (lines: ParsedLine[]): ParsedLine[] => {
-  const strictStopLabels = [
-    headingGroups.updateConsiderations,
-    headingGroups.designNotes,
-    headingGroups.internalContext,
-    headingGroups.estimationBreakdown,
-    headingGroups.technicalConditions,
-    headingGroups.additionalContext,
-    headingGroups.keyCommunicationPoints,
-    headingGroups.originalRequest,
-    headingGroups.originalRequestTableFields,
-    headingGroups.acceptanceMarkers,
-    headingGroups.title,
-    headingGroups.description,
-    headingGroups.changeOrderReason,
-    headingGroups.conditionsOfSatisfaction,
-    headingGroups.behaviorChanges
-  ];
+  const strictStopLabels = getAllHeadingGroupsExcept();
 
   return removeEmptyVisualItems(trimAtFirstStopLine(lines, strictStopLabels));
 };
@@ -435,39 +297,27 @@ const joinAsParagraph = (lines: ParsedLine[]): string =>
     .trim();
 
 const parseChangeOrderDocumentation = (text: string): TemplateData => {
-  const lines = removeExampleBlocks(getLines(text));
-
-  const conditionsEndStops = [
-    headingGroups.designNotes,
-    headingGroups.internalContext,
-    headingGroups.estimationBreakdown,
-    headingGroups.keyCommunicationPoints,
-    headingGroups.originalRequest,
-    headingGroups.originalRequestTableFields,
-    headingGroups.acceptanceMarkers
+  const lines = getLines(text);
+  const allContentSectionStops = getAllHeadingGroupsExcept();
+  const conditionChildSectionKeys = [
+    "behaviorChanges",
+    "erpIntegrationConditions",
+    "updateConsiderations"
   ];
-
-  const sectionAfterConditionsStops = [
-    headingGroups.updateConsiderations,
-    ...conditionsEndStops
-  ];
+  const conditionsEndStops = getAllHeadingGroupsExcept([
+    ...conditionChildSectionKeys
+  ]);
 
   const titleLines = getSectionLines(lines, headingGroups.title, [
-    headingGroups.description,
-    headingGroups.changeOrderReason,
-    headingGroups.conditionsOfSatisfaction,
-    ...sectionAfterConditionsStops
+    ...allContentSectionStops
   ]);
 
   const descriptionLines = getSectionLines(lines, headingGroups.description, [
-    headingGroups.changeOrderReason,
-    headingGroups.conditionsOfSatisfaction,
-    ...sectionAfterConditionsStops
+    ...allContentSectionStops
   ]);
 
   const reasonLines = getSectionLines(lines, headingGroups.changeOrderReason, [
-    headingGroups.conditionsOfSatisfaction,
-    ...sectionAfterConditionsStops
+    ...allContentSectionStops
   ]);
 
   const conditionsLines = getSectionLines(
@@ -479,54 +329,27 @@ const parseChangeOrderDocumentation = (text: string): TemplateData => {
   const behaviorChangeLines = getSectionLines(
     conditionsLines,
     headingGroups.behaviorChanges,
-    [
-      headingGroups.erpIntegrationConditions,
-      headingGroups.updateConsiderations,
-      ...conditionsEndStops
-    ]
+    allContentSectionStops
   );
 
   const erpIntegrationLines = sanitizeErpIntegrationLines(
     getSectionLines(
       conditionsLines,
       headingGroups.erpIntegrationConditions,
-      [
-        headingGroups.updateConsiderations,
-        ...conditionsEndStops
-      ]
+      allContentSectionStops
     )
   );
 
   const updateConsiderationLines = getSectionLines(
     conditionsLines,
     headingGroups.updateConsiderations,
-    [
-      ...conditionsEndStops,
-      headingGroups.technicalConditions,
-      headingGroups.additionalContext,
-      headingGroups.title,
-      headingGroups.description,
-      headingGroups.changeOrderReason,
-      headingGroups.conditionsOfSatisfaction,
-      headingGroups.behaviorChanges,
-      headingGroups.erpIntegrationConditions
-    ]
+    allContentSectionStops
   );
 
-  const designNotesSectionStops = [
-    headingGroups.estimationBreakdown,
-    headingGroups.responsibleOfEstimation,
-    headingGroups.acceptanceOfConditions,
-    headingGroups.responsibleOfDevelopment,
-    headingGroups.keyCommunicationPoints,
-    headingGroups.originalRequest,
-    headingGroups.originalRequestTableFields,
-    headingGroups.acceptanceMarkers,
-    headingGroups.title,
-    headingGroups.description,
-    headingGroups.changeOrderReason,
-    headingGroups.conditionsOfSatisfaction
-  ];
+  const designNotesSectionStops = getAllHeadingGroupsExcept([
+    "technicalConditions",
+    "additionalContext"
+  ]);
 
   const designNotesLines = getSectionLines(
     lines,
@@ -537,10 +360,7 @@ const parseChangeOrderDocumentation = (text: string): TemplateData => {
   const technicalConditionLines = getSectionLines(
     designNotesLines,
     headingGroups.technicalConditions,
-    [
-      headingGroups.additionalContext,
-      ...designNotesSectionStops
-    ]
+    allContentSectionStops
   );
 
   const additionalContextLines = getSectionLines(
@@ -744,9 +564,12 @@ const applyDomLevelsToList = (
 
 export const applyDomListLevelHints = (
   data: TemplateData,
-  domTextItems: OneNoteDomTextItem[] = []
+  domTextItems: OneNoteDomTextItem[] = [],
+  documentationProfile: DocumentationProfile = changeOrderDocumentationProfile
 ): TemplateData => {
   if (!domTextItems.length) return data;
+
+  const listKeys = new Set(documentationProfile.listFieldKeys);
 
   return Object.entries(data).reduce<TemplateData>((acc, [key, value]) => {
     if (!listKeys.has(key) || !Array.isArray(value)) {
@@ -761,9 +584,13 @@ export const applyDomListLevelHints = (
 
 export const parseStructuredText = (
   text: string,
-  mappings: FieldMapping[]
+  mappings: FieldMapping[],
+  documentationProfile: DocumentationProfile = changeOrderDocumentationProfile
 ): TemplateData => {
-  const documentationData = parseChangeOrderDocumentation(text);
+  const documentationData =
+    documentationProfile.id === "changeOrder"
+      ? parseChangeOrderDocumentation(text)
+      : {};
   const hasDocumentationData = Object.values(documentationData).some(
     value => !isEmptyValue(value)
   );

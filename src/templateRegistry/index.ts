@@ -1,7 +1,7 @@
-import { completedQaTemplate } from "../templates/completedQa";
-import { estimationTemplate } from "../templates/estimation";
-import { scopeTemplate } from "../templates/scope";
-import type { EmailTemplate, EmailTemplateId, EmailTemplateOverride } from "./types";
+import { completedQaTemplate } from "../templates/mails/completedInQA";
+import { estimationTemplate } from "../templates/mails/estimation";
+import { scopeTemplate } from "../templates/mails/scope";
+import type { EmailTemplate, EmailTemplateId, EmailTemplateOverride } from "../utils/types";
 
 export const emailTemplates: EmailTemplate[] = [
   estimationTemplate,

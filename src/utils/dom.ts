@@ -1,25 +1,27 @@
-export const delay = (ms: number): Promise<void> =>
-  new Promise(resolve => window.setTimeout(resolve, ms));
-
+/**
+ * Waits until an element matching the selector appears in the DOM.
+ */
 export const waitForElement = async <T extends Element>(
   selector: string,
-  timeoutMs = 15000
-): Promise<T | null> =>
-  new Promise(resolve => {
-    const existing = document.querySelector<T>(selector);
+  timeout = 15000
+): Promise<T> => {
+  return new Promise((resolve, reject) => {
+    const existingElement = document.querySelector<T>(selector);
 
-    if (existing) {
-      resolve(existing);
+    if (existingElement) {
+      resolve(existingElement);
+
       return;
     }
 
     const observer = new MutationObserver(() => {
       const element = document.querySelector<T>(selector);
 
-      if (!element) return;
+      if (element) {
+        observer.disconnect();
 
-      observer.disconnect();
-      resolve(element);
+        resolve(element);
+      }
     });
 
     observer.observe(document.body, {
@@ -27,11 +29,61 @@ export const waitForElement = async <T extends Element>(
       subtree: true
     });
 
-    window.setTimeout(() => {
+    setTimeout(() => {
       observer.disconnect();
-      resolve(null);
-    }, timeoutMs);
+
+      reject(
+        new Error(`Element not found for selector: ${selector}`)
+      );
+    }, timeout);
   });
+};
+
+/**
+ * Replaces the entire Gmail compose body with the generated HTML.
+ *
+ * Why:
+ * Gmail automatically injects the user's signature into the compose area.
+ * Since the extension already controls the signature/template,
+ * we remove Gmail's auto signature and fully replace the compose content.
+ *
+ * This avoids:
+ * - duplicated signatures
+ * - incorrect signature ordering
+ * - inconsistent rendering between users
+ */
+export const insertHtmlIntoContentEditable = (
+  element: HTMLElement,
+  html: string
+) => {
+  element.focus();
+
+  /**
+   * Remove Gmail auto signature if present.
+   */
+  const gmailSignature = element.querySelector<HTMLElement>(
+    ".gmail_signature, [data-smartmail='gmail_signature']"
+  );
+
+  if (gmailSignature) {
+    gmailSignature.remove();
+  }
+
+  /**
+   * Replace entire compose body.
+   */
+  element.innerHTML = html;
+
+  /**
+   * Notify Gmail editor state.
+   */
+  element.dispatchEvent(
+    new InputEvent("input", {
+      bubbles: true,
+      cancelable: true
+    })
+  );
+};
 
 export const setNativeInputValue = (element: HTMLInputElement, value: string) => {
   const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
@@ -43,26 +95,4 @@ export const setNativeInputValue = (element: HTMLInputElement, value: string) =>
 
   element.dispatchEvent(new Event("input", { bubbles: true }));
   element.dispatchEvent(new Event("change", { bubbles: true }));
-};
-
-export const insertHtmlIntoContentEditable = (
-  element: HTMLElement,
-  html: string
-) => {
-  element.focus();
-
-  const selection = window.getSelection();
-  const range = document.createRange();
-
-  range.selectNodeContents(element);
-  range.collapse(false);
-  selection?.removeAllRanges();
-  selection?.addRange(range);
-
-  const inserted = document.execCommand("insertHTML", false, html);
-
-  if (!inserted) {
-    element.innerHTML = html;
-    element.dispatchEvent(new InputEvent("input", { bubbles: true }));
-  }
 };
