@@ -10,6 +10,7 @@ export const defaultConfig: ExtensionConfig = {
   emptyFieldFallback: "",
   ticketUrlTemplate: "https://request-sa2.odoo.com/web#id={{ticketNumber}}&menu_id=87&cids=1&action=140&model=project.task&view_type=form",
   templateOverrides: {},
+  customTemplates: [],
   selectors: {
     oneNoteRoot: "",
     gmailComposeDialog: "div[role='dialog']",
@@ -59,6 +60,9 @@ export const getConfig = async (): Promise<ExtensionConfig> => {
     emptyFieldFallback: savedConfig?.emptyFieldFallback ?? defaultConfig.emptyFieldFallback,
     ticketUrlTemplate: savedConfig?.ticketUrlTemplate ?? defaultConfig.ticketUrlTemplate,
     templateOverrides: migrateLegacyTemplateOverride(savedConfig),
+    customTemplates: Array.isArray(savedConfig?.customTemplates)
+      ? savedConfig!.customTemplates
+      : defaultConfig.customTemplates,
     selectors: {
       ...defaultConfig.selectors,
       ...savedConfig?.selectors

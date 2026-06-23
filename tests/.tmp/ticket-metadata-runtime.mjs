@@ -347,6 +347,7 @@ var defaultConfig = {
   emptyFieldFallback: "",
   ticketUrlTemplate: "https://request-sa2.odoo.com/web#id={{ticketNumber}}&menu_id=87&cids=1&action=140&model=project.task&view_type=form",
   templateOverrides: {},
+  customTemplates: [],
   selectors: {
     oneNoteRoot: "",
     gmailComposeDialog: "div[role='dialog']",

@@ -1,4 +1,4 @@
-import { getEmailTemplateForConfig } from "../templateRegistry";
+import { getEmailTemplateForConfig, resolveEmailTemplate } from "../templateRegistry";
 import { getConfig } from "../utils/config";
 import { getActiveTab, sendMessageToTab } from "../utils/helpers/chrome";
 import { getErrorMessage } from "../utils/helpers/error";
@@ -32,10 +32,7 @@ const generateGmailDraft = async (
   }
 
   const config = await getConfig();
-  const template = getEmailTemplateForConfig(
-    message.templateId,
-    config.templateOverrides
-  );
+  const template = resolveEmailTemplate(message.templateId, config);
   const activeTab = await getActiveTab();
 
   if (!activeTab?.id) {

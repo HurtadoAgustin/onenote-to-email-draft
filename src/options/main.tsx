@@ -4,7 +4,7 @@ import {
   emailTemplates,
   getEmailTemplateForConfig
 } from "../templateRegistry";
-import type { EmailTemplateId, EmailTemplateOverride } from "../utils/types";
+import type { EmailTemplate, EmailTemplateId, EmailTemplateOverride } from "../utils/types";
 import { defaultConfig, getConfig, resetConfig, saveConfig } from "../utils/config";
 import type {
   ExtensionConfig,
@@ -12,6 +12,10 @@ import type {
   ExtensionSelectors,
   FieldMapping
 } from "../utils/types";
+import {
+  createCustomTemplate,
+  validateCustomTemplate
+} from "../utils/helpers/customTemplate";
 import "./styles.css";
 
 const parseJsonField = <T,>(value: string, fallback: T): T => {
@@ -41,10 +45,20 @@ const App = () => {
   const [selectorsJson, setSelectorsJson] = useState("");
   const [flagsJson, setFlagsJson] = useState("");
   const [status, setStatus] = useState("Loading settings...");
+  const [customTemplates, setCustomTemplates] = useState<EmailTemplate[]>([]);
+  const [selectedCustomTemplateId, setSelectedCustomTemplateId] = useState<string | null>(null);
 
   const selectedTemplate = useMemo(
     () => getEmailTemplateForConfig(selectedTemplateId, config.templateOverrides),
     [config.templateOverrides, selectedTemplateId]
+  );
+
+  const selectedCustomTemplate = useMemo(
+    () =>
+      selectedCustomTemplateId
+        ? customTemplates.find(t => t.id === selectedCustomTemplateId) ?? null
+        : null,
+    [customTemplates, selectedCustomTemplateId]
   );
 
   const loadTemplateEditor = (
@@ -63,6 +77,7 @@ const App = () => {
     void getConfig().then(loadedConfig => {
       setConfig(loadedConfig);
       loadTemplateEditor("estimation", loadedConfig);
+      setCustomTemplates(loadedConfig.customTemplates ?? []);
       setSelectorsJson(JSON.stringify(loadedConfig.selectors, null, 2));
       setFlagsJson(JSON.stringify(loadedConfig.flags, null, 2));
       setStatus("Settings loaded");
@@ -83,11 +98,51 @@ const App = () => {
     loadTemplateEditor(templateId, config);
   };
 
+  const addCustomTemplate = () => {
+    const newTemplate = createCustomTemplate();
+    setCustomTemplates(prev => [...prev, newTemplate]);
+    setSelectedCustomTemplateId(newTemplate.id);
+  };
+
+  const selectCustomTemplate = (id: string) => {
+    setSelectedCustomTemplateId(id);
+  };
+
+  const updateCustomTemplateField = <K extends keyof EmailTemplate>(
+    field: K,
+    value: EmailTemplate[K]
+  ) => {
+    if (!selectedCustomTemplateId) return;
+    setCustomTemplates(prev =>
+      prev.map(t =>
+        t.id === selectedCustomTemplateId ? { ...t, [field]: value } : t
+      )
+    );
+  };
+
+  const deleteCustomTemplate = (id: string) => {
+    setCustomTemplates(prev => prev.filter(t => t.id !== id));
+    if (selectedCustomTemplateId === id) {
+      setSelectedCustomTemplateId(null);
+    }
+  };
+
   const save = async () => {
     const parsedFieldMappings = parseJsonField<FieldMapping[]>(
       fieldMappingsJson,
       selectedTemplate.fieldMappings
     );
+
+    for (const template of customTemplates) {
+      const otherIds = customTemplates
+        .filter(t => t.id !== template.id)
+        .map(t => t.id);
+      const result = validateCustomTemplate(template, otherIds);
+      if (!result.ok) {
+        setStatus(`❌ ${result.error}`);
+        return;
+      }
+    }
 
     const updatedConfig: ExtensionConfig = {
       ...config,
@@ -99,6 +154,7 @@ const App = () => {
           parsedFieldMappings
         )
       },
+      customTemplates,
       selectors: parseJsonField<ExtensionSelectors>(selectorsJson, config.selectors),
       flags: parseJsonField<ExtensionFlags>(flagsJson, config.flags)
     };
@@ -135,8 +191,10 @@ const App = () => {
     const restoredConfig = await resetConfig();
     setConfig(restoredConfig);
     loadTemplateEditor("estimation", restoredConfig);
+    setCustomTemplates(restoredConfig.customTemplates ?? []);
     setSelectorsJson(JSON.stringify(restoredConfig.selectors, null, 2));
     setFlagsJson(JSON.stringify(restoredConfig.flags, null, 2));
+    setSelectedCustomTemplateId(null);
     setStatus("✅ Settings restored");
   };
 
@@ -230,6 +288,111 @@ const App = () => {
 
         <button className="secondaryButton inlineButton" onClick={resetSelectedTemplate} type="button">
           Restore selected template
+        </button>
+      </section>
+
+      <section className="card">
+        <h2>Custom templates</h2>
+        <p className="templateDescription">
+          Create your own email templates. They appear in the popup alongside the built-in templates.
+        </p>
+
+        {customTemplates.length === 0 ? (
+          <p>No custom templates yet.</p>
+        ) : (
+          <>
+            <div className="templateTabs">
+              {customTemplates.map(template => (
+                <button
+                  className={
+                    template.id === selectedCustomTemplateId
+                      ? "tabButton active"
+                      : "tabButton"
+                  }
+                  key={template.id}
+                  onClick={() => selectCustomTemplate(template.id)}
+                  type="button"
+                >
+                  {template.label || "(sin etiqueta)"}
+                </button>
+              ))}
+            </div>
+
+            {selectedCustomTemplate && (
+              <>
+                <label>
+                  Label
+                  <input
+                    value={selectedCustomTemplate.label}
+                    onChange={event =>
+                      updateCustomTemplateField("label", event.target.value)
+                    }
+                  />
+                </label>
+
+                <label>
+                  Description
+                  <input
+                    value={selectedCustomTemplate.description}
+                    onChange={event =>
+                      updateCustomTemplateField("description", event.target.value)
+                    }
+                  />
+                </label>
+
+                <label>
+                  Subject template
+                  <input
+                    value={selectedCustomTemplate.subjectTemplate}
+                    onChange={event =>
+                      updateCustomTemplateField("subjectTemplate", event.target.value)
+                    }
+                  />
+                </label>
+
+                <label>
+                  Body HTML template
+                  <textarea
+                    rows={12}
+                    value={selectedCustomTemplate.bodyTemplate}
+                    onChange={event =>
+                      updateCustomTemplateField("bodyTemplate", event.target.value)
+                    }
+                  />
+                </label>
+
+                <label>
+                  Field mappings JSON
+                  <textarea
+                    rows={10}
+                    value={JSON.stringify(selectedCustomTemplate.fieldMappings, null, 2)}
+                    onChange={event =>
+                      updateCustomTemplateField(
+                        "fieldMappings",
+                        parseJsonField<FieldMapping[]>(event.target.value, selectedCustomTemplate.fieldMappings)
+                      )
+                    }
+                  />
+                </label>
+
+                <button
+                  className="secondaryButton inlineButton"
+                  onClick={() => deleteCustomTemplate(selectedCustomTemplate.id)}
+                  type="button"
+                >
+                  Delete
+                </button>
+              </>
+            )}
+          </>
+        )}
+
+        <button
+          className="secondaryButton inlineButton"
+          onClick={addCustomTemplate}
+          type="button"
+        >
+          Add custom template
         </button>
       </section>
 

@@ -1,4 +1,4 @@
-export type EmailTemplateId = "estimation" | "scope" | "completedQa";
+export type EmailTemplateId = string;
 
 export type FieldMapping = {
   key: string;
@@ -69,6 +69,7 @@ export type ExtensionConfig = {
   emptyFieldFallback: string;
   ticketUrlTemplate: string;
   templateOverrides: Partial<Record<EmailTemplateId, EmailTemplateOverride>>;
+  customTemplates: EmailTemplate[];
   selectors: ExtensionSelectors;
   flags: ExtensionFlags;
 };

@@ -28,9 +28,9 @@ description: "Lista de tareas para implementar la funcionalidad de plantillas pe
 
 **Objetivo**: confirmar que los artefactos de diseño están completos y la constitución sigue alineada.
 
-- [ ] T001 [P] Verificar que `specs/002-custom-templates/spec.md` contiene todas las secciones obligatorias (Resumen Ejecutivo, Escenarios de Usuario, Requisitos, Criterios de Éxito, Suposiciones)
-- [ ] T002 [P] Verificar que `specs/002-custom-templates/plan.md` tiene la tabla de Constitution Check marcada como ✅ para los cinco principios
-- [ ] T003 [P] Verificar que `.specify/memory/constitution.md` sigue en versión 1.0.1 y refleja los principios del proyecto
+- [x] T001 [P] Verificar que `specs/002-custom-templates/spec.md` contiene todas las secciones obligatorias (Resumen Ejecutivo, Escenarios de Usuario, Requisitos, Criterios de Éxito, Suposiciones)
+- [x] T002 [P] Verificar que `specs/002-custom-templates/plan.md` tiene la tabla de Constitution Check marcada como ✅ para los cinco principios
+- [x] T003 [P] Verificar que `.specify/memory/constitution.md` sigue en versión 1.0.1 y refleja los principios del proyecto
 
 ---
 
@@ -38,14 +38,14 @@ description: "Lista de tareas para implementar la funcionalidad de plantillas pe
 
 **Objetivo**: aplicar los cambios de tipos, defaults y helpers que desbloquean todas las historias de usuario.
 
-- [ ] T004 Modificar `src/utils/types.ts`: cambiar `EmailTemplateId` de union de literales a `string` y añadir `customTemplates: EmailTemplate[]` a `ExtensionConfig`
-- [ ] T005 [P] Añadir `customTemplates: []` a `defaultConfig` en `src/utils/config.ts`
-- [ ] T006 Añadir merge defensivo de `customTemplates` en `getConfig` (fallback a `[]` si el campo falta) en `src/utils/config.ts`
-- [ ] T007 [P] Crear `src/utils/helpers/customTemplate.ts` con la función `createCustomTemplate()` que devuelve un objeto `EmailTemplate` con `id = crypto.randomUUID()` y `documentationProfile = changeOrderDocumentationProfile`
-- [ ] T008 Añadir las funciones `validateCustomTemplate(template, existingIds)` y `isValidCustomTemplate(template)` a `src/utils/helpers/customTemplate.ts` (rechazo si `id` vacío/duplicado/colisión con built-in, `label` vacío, `subjectTemplate` vacío; body vacío permitido)
-- [ ] T009 [P] Añadir `getAvailableEmailTemplates(config)` a `src/templateRegistry/index.ts` que concatena `emailTemplates` con `config.customTemplates`
-- [ ] T010 [P] Crear `tests/custom-template.test.mjs` con aserciones para `createCustomTemplate` (forma, id UUID, defaults) y `validateCustomTemplate` (válido, label vacío, subject vacío, id duplicado, colisión con built-in, body vacío permitido)
-- [ ] T011 Ejecutar `npm run typecheck` y confirmar que los cambios de tipo compilan sin errores antes de continuar con las historias
+- [x] T004 Modificar `src/utils/types.ts`: cambiar `EmailTemplateId` de union de literales a `string` y añadir `customTemplates: EmailTemplate[]` a `ExtensionConfig`
+- [x] T005 [P] Añadir `customTemplates: []` a `defaultConfig` en `src/utils/config.ts`
+- [x] T006 Añadir merge defensivo de `customTemplates` en `getConfig` (fallback a `[]` si el campo falta) en `src/utils/config.ts`
+- [x] T007 [P] Crear `src/utils/helpers/customTemplate.ts` con la función `createCustomTemplate()` que devuelve un objeto `EmailTemplate` con `id = crypto.randomUUID()` y `documentationProfile = changeOrderDocumentationProfile`
+- [x] T008 Añadir las funciones `validateCustomTemplate(template, existingIds)` y `isValidCustomTemplate(template)` a `src/utils/helpers/customTemplate.ts` (rechazo si `id` vacío/duplicado/colisión con built-in, `label` vacío, `subjectTemplate` vacío; body vacío permitido)
+- [x] T009 [P] Añadir `getAvailableEmailTemplates(config)` a `src/templateRegistry/index.ts` que concatena `emailTemplates` con `config.customTemplates`
+- [x] T010 [P] Crear `tests/custom-template.test.mjs` con aserciones para `createCustomTemplate` (forma, id UUID, defaults) y `validateCustomTemplate` (válido, label vacío, subject vacío, id duplicado, colisión con built-in, body vacío permitido)
+- [x] T011 Ejecutar `npm run typecheck` y confirmar que los cambios de tipo compilan sin errores antes de continuar con las historias
 
 ---
 
@@ -57,13 +57,13 @@ description: "Lista de tareas para implementar la funcionalidad de plantillas pe
 
 ### Implementación de US1
 
-- [ ] T012 [P] [US1] Añadir nueva sección `<section className="card">` con título "Custom templates" y botón **Add custom template** en `src/options/main.tsx`
-- [ ] T013 [P] [US1] Añadir estado local `const [customTemplates, setCustomTemplates] = useState<EmailTemplate[]>(config.customTemplates)` en `src/options/main.tsx` y renderizar la lista con un editor por entrada
-- [ ] T014 [US1] Implementar el handler `addCustomTemplate` en `src/options/main.tsx` que invoca `createCustomTemplate()` y añade la entrada al estado local
-- [ ] T015 [P] [US1] Añadir la llamada a `validateCustomTemplate` dentro del handler `save` existente en `src/options/main.tsx` para cada plantilla de la lista
-- [ ] T016 [P] [US1] Mostrar mensaje de error claro (`status = "❌ ..."`) en la UI de opciones cuando `validateCustomTemplate` devuelve `{ ok: false }`
-- [ ] T017 [US1] Extender el handler `save` para incluir `customTemplates: customTemplates` en el `updatedConfig` antes de invocar `saveConfig`
-- [ ] T018 [US1] Verificar que una plantilla con `bodyTemplate` vacío se guarda correctamente (FR-011) y aparece en el popup
+- [x] T012 [P] [US1] Añadir nueva sección `<section className="card">` con título "Custom templates" y botón **Add custom template** en `src/options/main.tsx`
+- [x] T013 [P] [US1] Añadir estado local `const [customTemplates, setCustomTemplates] = useState<EmailTemplate[]>(config.customTemplates)` en `src/options/main.tsx` y renderizar la lista con un editor por entrada
+- [x] T014 [US1] Implementar el handler `addCustomTemplate` en `src/options/main.tsx` que invoca `createCustomTemplate()` y añade la entrada al estado local
+- [x] T015 [P] [US1] Añadir la llamada a `validateCustomTemplate` dentro del handler `save` existente en `src/options/main.tsx` para cada plantilla de la lista
+- [x] T016 [P] [US1] Mostrar mensaje de error claro (`status = "❌ ..."`) en la UI de opciones cuando `validateCustomTemplate` devuelve `{ ok: false }`
+- [x] T017 [US1] Extender el handler `save` para incluir `customTemplates: customTemplates` en el `updatedConfig` antes de invocar `saveConfig`
+- [x] T018 [US1] Verificar que una plantilla con `bodyTemplate` vacío se guarda correctamente (FR-011) y aparece en el popup
 - [ ] T019 [US1] Validar manualmente los escenarios 1, 2, 3 y 4 de `quickstart.md` y registrar el resultado en una nota del commit
 
 ---
@@ -76,9 +76,9 @@ description: "Lista de tareas para implementar la funcionalidad de plantillas pe
 
 ### Implementación de US2
 
-- [ ] T020 [P] [US2] Implementar el handler `selectCustomTemplate(id)` en `src/options/main.tsx` que carga los campos de la plantilla seleccionada en los estados locales del editor
-- [ ] T021 [P] [US2] Implementar los handlers de cambio para `label`, `description`, `subjectTemplate`, `bodyTemplate` y `fieldMappings` que actualizan la entrada correspondiente en el estado `customTemplates`
-- [ ] T022 [US2] Verificar que editar y guardar actualiza la misma entrada en `chrome.storage.local` (mismo `id`, sin duplicar)
+- [x] T020 [P] [US2] Implementar el handler `selectCustomTemplate(id)` en `src/options/main.tsx` que carga los campos de la plantilla seleccionada en los estados locales del editor
+- [x] T021 [P] [US2] Implementar los handlers de cambio para `label`, `description`, `subjectTemplate`, `bodyTemplate` y `fieldMappings` que actualizan la entrada correspondiente en el estado `customTemplates`
+- [x] T022 [US2] Verificar que editar y guardar actualiza la misma entrada en `chrome.storage.local` (mismo `id`, sin duplicar)
 - [ ] T023 [US2] Validar manualmente el escenario 5 de `quickstart.md` y registrar el resultado en una nota del commit
 
 ---
@@ -91,10 +91,10 @@ description: "Lista de tareas para implementar la funcionalidad de plantillas pe
 
 ### Implementación de US3
 
-- [ ] T024 [P] [US3] Añadir botón **Delete** por entrada de plantilla personalizada en `src/options/main.tsx`
-- [ ] T025 [P] [US3] Implementar el handler `deleteCustomTemplate(id)` que elimina la entrada del estado local `customTemplates` en `src/options/main.tsx`
-- [ ] T026 [US3] Verificar que la eliminación se persiste al pulsar **Save** y la plantilla ya no aparece en el popup tras la próxima apertura
-- [ ] T027 [P] [US3] Ocultar el botón **Restore selected template** en `src/options/main.tsx` cuando la plantilla seleccionada es custom (FR-005, SC-006)
+- [x] T024 [P] [US3] Añadir botón **Delete** por entrada de plantilla personalizada en `src/options/main.tsx`
+- [x] T025 [P] [US3] Implementar el handler `deleteCustomTemplate(id)` que elimina la entrada del estado local `customTemplates` en `src/options/main.tsx`
+- [x] T026 [US3] Verificar que la eliminación se persiste al pulsar **Save** y la plantilla ya no aparece en el popup tras la próxima apertura
+- [x] T027 [P] [US3] Ocultar el botón **Restore selected template** en `src/options/main.tsx` cuando la plantilla seleccionada es custom (FR-005, SC-006)
 - [ ] T028 [US3] Validar manualmente los escenarios 6 y 7 de `quickstart.md` y registrar el resultado en una nota del commit
 
 ---
@@ -107,10 +107,10 @@ description: "Lista de tareas para implementar la funcionalidad de plantillas pe
 
 ### Implementación de US4
 
-- [ ] T029 [P] [US4] Cargar la configuración en el popup con `useEffect` invocando `getConfig()` en `src/popup/main.tsx` y almacenar el resultado en un estado local
-- [ ] T030 [P] [US4] Reemplazar el uso directo de `emailTemplates` por `getAvailableEmailTemplates(config)` en el render del popup, manteniendo el filtro de plantillas inválidas (FR-012)
-- [ ] T031 [P] [US4] Actualizar la resolución de plantilla en `src/background/index.ts`: tras `getEmailTemplateForConfig`, si el `id` no coincide, buscar en `config.customTemplates` por `id`; mantener el fallback a `estimation` si tampoco se encuentra
-- [ ] T032 [P] [US4] Filtrar las plantillas personalizadas con esquema inválido (campos requeridos ausentes, tipos incorrectos) antes de renderizarlas en el popup, sin interrumpir la lista de las integradas
+- [x] T029 [P] [US4] Cargar la configuración en el popup con `useEffect` invocando `getConfig()` en `src/popup/main.tsx` y almacenar el resultado en un estado local
+- [x] T030 [P] [US4] Reemplazar el uso directo de `emailTemplates` por `getAvailableEmailTemplates(config)` en el render del popup, manteniendo el filtro de plantillas inválidas (FR-012)
+- [x] T031 [P] [US4] Actualizar la resolución de plantilla en `src/background/index.ts`: tras `getEmailTemplateForConfig`, si el `id` no coincide, buscar en `config.customTemplates` por `id`; mantener el fallback a `estimation` si tampoco se encuentra
+- [x] T032 [P] [US4] Filtrar las plantillas personalizadas con esquema inválido (campos requeridos ausentes, tipos incorrectos) antes de renderizarlas en el popup, sin interrumpir la lista de las integradas
 - [ ] T033 [US4] Validar manualmente el escenario 8 de `quickstart.md` y registrar el resultado en una nota del commit
 
 ---
@@ -123,8 +123,8 @@ description: "Lista de tareas para implementar la funcionalidad de plantillas pe
 
 ### Implementación de US5
 
-- [ ] T034 [US5] Verificar que `saveConfig` en `src/utils/config.ts` persiste el array `customTemplates` completo bajo la clave `onenoteToMailDraftConfig` en `chrome.storage.local`
-- [ ] T035 [US5] Verificar que `getConfig` recupera el array `customTemplates` correctamente en la siguiente lectura (incluyendo el merge defensivo a `[]` si el campo falta)
+- [x] T034 [US5] Verificar que `saveConfig` en `src/utils/config.ts` persiste el array `customTemplates` completo bajo la clave `onenoteToMailDraftConfig` en `chrome.storage.local`
+- [x] T035 [US5] Verificar que `getConfig` recupera el array `customTemplates` correctamente en la siguiente lectura (incluyendo el merge defensivo a `[]` si el campo falta)
 - [ ] T036 [US5] Validar manualmente el escenario 9 de `quickstart.md` (crear plantillas, recargar la extensión desde `chrome://extensions`, cerrar y reabrir el navegador) y registrar el resultado en una nota del commit
 
 ---
@@ -134,12 +134,12 @@ description: "Lista de tareas para implementar la funcionalidad de plantillas pe
 **Objetivo**: validar la integridad global de la feature, las pruebas, la constitución y los artefactos relacionados.
 
 - [ ] T037 [P] Validar manualmente el escenario 10 de `quickstart.md` (inyectar plantilla con esquema inválido y verificar que el popup sigue funcional)
-- [ ] T038 [P] Verificar que los cinco principios de la constitución siguen cumpliéndose tras los cambios (verificación cruzada con la tabla Constitution Check de `plan.md`)
-- [ ] T039 [P] Verificar que el checklist de calidad del spec (`specs/002-custom-templates/checklists/requirements.md`) sigue marcando los 16 ítems como `[x]`
-- [ ] T040 [P] Ejecutar `npm run typecheck` desde la raíz y confirmar que termina con código 0
-- [ ] T041 [P] Ejecutar `npm run build` y confirmar que `dist/` contiene los artefactos esperados (`popup.html`, `options.html`, `manifest.json`, `background/index.js`, `content/onenote.js`, `content/gmail.js`, assets JS/CSS)
-- [ ] T042 [P] Ejecutar todos los tests (`tests/custom-template.test.mjs`, `tests/onenote-ticket-metadata.test.mjs`, `tests/onenote-level-hints.test.mjs`) y confirmar que todos imprimen `PASS:`
-- [ ] T043 [P] Verificar que `AGENTS.md` apunta al plan activo (`specs/002-custom-templates/plan.md`) entre los marcadores `<!-- SPECKIT START -->` y `<!-- SPECKIT END -->`
+- [x] T038 [P] Verificar que los cinco principios de la constitución siguen cumpliéndose tras los cambios (verificación cruzada con la tabla Constitution Check de `plan.md`)
+- [x] T039 [P] Verificar que el checklist de calidad del spec (`specs/002-custom-templates/checklists/requirements.md`) sigue marcando los 16 ítems como `[x]`
+- [x] T040 [P] Ejecutar `npm run typecheck` desde la raíz y confirmar que termina con código 0
+- [x] T041 [P] Ejecutar `npm run build` y confirmar que `dist/` contiene los artefactos esperados (`popup.html`, `options.html`, `manifest.json`, `background/index.js`, `content/onenote.js`, `content/gmail.js`, assets JS/CSS)
+- [x] T042 [P] Ejecutar todos los tests (`tests/custom-template.test.mjs`, `tests/onenote-ticket-metadata.test.mjs`, `tests/onenote-level-hints.test.mjs`) y confirmar que todos imprimen `PASS:`
+- [x] T043 [P] Verificar que `AGENTS.md` apunta al plan activo (`specs/002-custom-templates/plan.md`) entre los marcadores `<!-- SPECKIT START -->` y `<!-- SPECKIT END -->`
 
 ---
 
