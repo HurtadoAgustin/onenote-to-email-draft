@@ -38,10 +38,10 @@ export const completedQaTemplate: EmailTemplate = {
   {{updateConsiderations}}
 
   <h2 style="color: #1f4e79; font-size: 18px; font-weight: 400; margin: 18px 0 8px 0;">Este story incluye los siguientes cambios en el sistema:</h2>
-  <ul></ul>
+  <ul><li></li></ul>
   
   <h2 style="color: #1f4e79; font-size: 18px; font-weight: 400; margin: 18px 0 8px 0;">Pruebas recomendadas:</h2>
-  <ul></ul>
+  <ul><li></li></ul>
 
   <p>Quedo atento a cualquier comentario.<br />Saludos.</p>
 </div>
