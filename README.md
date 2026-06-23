@@ -1,31 +1,33 @@
 # OneNote to Mail Draft
 
-Chrome/Edge extension to extract structured data from OneNote Web and generate a reviewable Gmail draft, fully client-side and without backend or AI.
+Extensión para Chrome/Edge que extrae datos estructurados de OneNote Web
+y genera un borrador revisable de Gmail, completamente del lado del
+cliente, sin backend ni IA.
 
-## MVP flow
+## Flujo del MVP
 
-1. Open a OneNote Web page with structured text.
-2. Click the extension popup.
-3. Click **Send email**.
-4. The extension reads the current OneNote tab.
-5. It parses mapped fields.
-6. It opens Gmail compose.
-7. It inserts subject and HTML body.
-8. The user reviews and sends manually.
+1. Abrir una página de OneNote Web con texto estructurado.
+2. Hacer clic en el popup de la extensión.
+3. Hacer clic en **Send email**.
+4. La extensión lee la pestaña activa de OneNote.
+5. Parsea los campos mapeados.
+6. Abre la composición de Gmail.
+7. Inserta el asunto y el cuerpo HTML.
+8. El usuario revisa y envía manualmente.
 
-## Setup
+## Instalación
 
 ```bash
 npm install
 npm run build
 ```
 
-Load the `dist` folder as an unpacked extension from:
+Cargar la carpeta `dist` como extensión sin empaquetar desde:
 
 - Chrome: `chrome://extensions`
 - Edge: `edge://extensions`
 
-## Example OneNote content
+## Ejemplo de Contenido de OneNote
 
 ```txt
 Client: ACME
@@ -34,7 +36,7 @@ Issue: Authentication error
 Resolution: Service restart
 ```
 
-## Privacy
+## Privacidad
 
-This MVP stores only configuration in `chrome.storage.local`.
-It does not store extracted OneNote data and does not send data to a backend.
+Este MVP almacena únicamente configuración en `chrome.storage.local`.
+No guarda datos extraídos de OneNote y no envía datos a ningún backend.
