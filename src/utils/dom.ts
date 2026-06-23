@@ -95,45 +95,4 @@ export const setNativeInputValue = (element: HTMLInputElement, value: string) =>
 
   element.dispatchEvent(new Event("input", { bubbles: true }));
   element.dispatchEvent(new Event("change", { bubbles: true }));
-<<<<<<< HEAD
 };
-=======
-};
-
-export const insertHtmlIntoContentEditable = (
-  element: HTMLElement,
-  html: string
-) => {
-  element.focus();
-
-  const selection = window.getSelection();
-  const range = document.createRange();
-  const gmailSignature = element.querySelector<HTMLElement>(
-    ".gmail_signature, [data-smartmail='gmail_signature']"
-  );
-
-  if (gmailSignature) {
-    range.setStartBefore(gmailSignature);
-    range.collapse(true);
-  } else {
-    range.selectNodeContents(element);
-    range.collapse(false);
-  }
-
-  selection?.removeAllRanges();
-  selection?.addRange(range);
-
-  const htmlWithSpacer = gmailSignature ? `${html}<br />` : html;
-  const inserted = document.execCommand("insertHTML", false, htmlWithSpacer);
-
-  if (!inserted) {
-    if (gmailSignature) {
-      gmailSignature.insertAdjacentHTML("beforebegin", htmlWithSpacer);
-    } else {
-      element.innerHTML = html;
-    }
-
-    element.dispatchEvent(new InputEvent("input", { bubbles: true }));
-  }
-};
->>>>>>> 1935757909261b875febcbe6c718979dca3862d1
