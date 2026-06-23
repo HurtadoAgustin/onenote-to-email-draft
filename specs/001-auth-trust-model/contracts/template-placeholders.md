@@ -64,8 +64,9 @@ dinámicamente.
   (`<ul><li>texto<ul>...</ul></li></ul>`).
 - Claves en `htmlKeys` (`estimationBreakdownTable`) → se insertan
   crudas sin escape.
-- Clave `updateConsiderations` → render especial con título en
-  `<strong>` y detalles en `<li><em>...</em></li>`.
+- Clave `updateConsiderations` → render especial con el primer
+  elemento como título en `<p>` (sin negrita) y el resto de los
+  elementos como detalles en `<li><em>...</em></li>`.
 - Clave inexistente o vacía → se sustituye por string vacío.
 
 ### Modo `escapeValues: false`

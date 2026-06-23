@@ -669,7 +669,7 @@ var renderUpdateConsiderations = (value) => {
   const detailItemsHtml = details.map((item) => `<li><em>${escapeHtml(item.text.trim())}</em></li>`).join("");
   const detailsHtml = detailItemsHtml ? `<ul style="margin: 0 0 0 18px; padding-left: 18px; list-style-type: circle;">${detailItemsHtml}</ul>` : "";
   return `<div style="margin: 0 0 0 36px;">
-  <p style="margin: 0 0 4px 0;"><strong>${escapeHtml(title.text.trim())}</strong></p>
+  <p style="margin: 0 0 4px 0;">${escapeHtml(title.text.trim())}</p>
   ${detailsHtml}
 </div>`;
 };

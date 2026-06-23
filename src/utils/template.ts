@@ -100,7 +100,7 @@ const renderUpdateConsiderations = (value: TemplateValue): string => {
     : "";
 
   return `<div style="margin: 0 0 0 36px;">
-  <p style="margin: 0 0 4px 0;"><strong>${escapeHtml(title.text.trim())}</strong></p>
+  <p style="margin: 0 0 4px 0;">${escapeHtml(title.text.trim())}</p>
   ${detailsHtml}
 </div>`;
 };

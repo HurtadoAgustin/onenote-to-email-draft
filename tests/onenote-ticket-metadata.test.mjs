@@ -131,7 +131,8 @@ assert.equal(
 );
 assert.match(html, /Internal context \(not to be shared with customer\)/);
 assert.match(html, /<h2[^>]*>Consideraciones para Updates<\/h2>/);
-assert.match(html, /<strong>Cambio actualizable<\/strong>/);
+assert.doesNotMatch(html, /<strong>Cambio actualizable<\/strong>/);
+assert.match(html, /<p[^>]*>Cambio actualizable<\/p>/);
 assert.doesNotMatch(html, /<li>Cambio actualizable<\/li>/);
 assert.match(
   html,
